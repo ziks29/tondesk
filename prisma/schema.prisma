@@ -1,0 +1,31 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Bot {
+  id                String  @id @default(cuid())
+  botToken          String  @unique
+  ownerWallet       String
+  knowledgeBaseText String
+  aiModel           String  @default("google/gemini-2.0-flash-001")
+  isActive          Boolean @default(true)
+  secretToken       String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  interactions      Interaction[]
+}
+
+model Interaction {
+  id          String   @id @default(cuid())
+  botId       String
+  bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  chatId      String
+  userInput   String
+  aiResponse  String
+  aiIntent    String?  // Store as JSON string
+  createdAt   DateTime @default(now())
+}
