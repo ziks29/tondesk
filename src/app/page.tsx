@@ -205,10 +205,11 @@ export default function Home() {
               </div>
               <form className="space-y-5" onSubmit={handleDeploy}>
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
+                  <label htmlFor="bot-token" className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
                     Telegram Bot Token
                   </label>
                   <input
+                    id="bot-token"
                     type="text"
                     placeholder="123456:ABC-your-telegram-bot-token"
                     className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
@@ -221,10 +222,11 @@ export default function Home() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
+                  <label htmlFor="knowledge-base" className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
                     Manual Knowledge Base
                   </label>
                   <textarea
+                    id="knowledge-base"
                     placeholder="Paste FAQ, docs, product descriptions, and prices here..."
                     rows={4}
                     className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
@@ -247,6 +249,7 @@ export default function Home() {
                           <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                           <input
                             type="url"
+                            aria-label={`Documentation URL ${index + 1}`}
                             placeholder="https://docs.example.com/faq"
                             value={url}
                             onChange={(e) => updateUrl(index, e.target.value)}
@@ -259,6 +262,8 @@ export default function Home() {
                         {urls.length > 1 && (
                           <button
                             type="button"
+                            aria-label={`Remove URL ${index + 1}`}
+                            title={`Remove URL ${index + 1}`}
                             onClick={() => removeUrl(index)}
                             className="p-2 text-slate-400 hover:text-red-500 transition-colors"
                           >
@@ -318,6 +323,8 @@ export default function Home() {
                             </div>
                             <button
                               type="button"
+                              aria-label={`Remove file ${file.name}`}
+                              title={`Remove file ${file.name}`}
                               onClick={() => removeFile(index)}
                               className="p-1.5 text-slate-400 hover:text-red-500"
                             >
