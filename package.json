@@ -12,6 +12,7 @@
     "prisma:migrate": "prisma migrate dev --name init"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "@prisma/adapter-better-sqlite3": "^7.5.0",
     "@prisma/client": "^7.5.0",
     "@tma.js/sdk-react": "^3.0.11",

@@ -1,0 +1,16 @@
+--- src/app/api/webhook/[botToken]/route.ts
++++ src/app/api/webhook/[botToken]/route.ts
+@@ -104,8 +104,13 @@
+       if (mcpAuthToken) {
+         headers['Authorization'] = `Bearer ${mcpAuthToken}`;
+       }
+
+-      const transport = new SSEClientTransport(new URL(mcpUrl), { headers });
++      const transport = new SSEClientTransport(new URL(mcpUrl), {
++        eventSourceInit: {
++          fetch: (url, init) => fetch(url, { ...init, headers: { ...init?.headers, ...headers } }),
++        }
++      });
+       mcpClient = new Client({
+         name: 'TonDesk',
+         version: '1.0.0',

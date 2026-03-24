@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+import { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 
 import { prisma } from '@/lib/prisma';
 
@@ -71,7 +73,7 @@ async function sendTelegramMessage(
   });
 }
 
-async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPrompt: string) {
+async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPrompt: string, mcpUrl?: string | null, mcpAuthToken?: string | null) {
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
@@ -92,47 +94,137 @@ async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPro
     `KNOWLEDGE_BASE:\n${knowledgeBaseText}`,
   ].join('\n');
 
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: aiModel,
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
-  });
+  let mcpClient: Client | null = null;
+  let tools: any[] = [];
 
-  if (!response.ok) {
-    const raw = await response.text();
-    throw new Error(`OpenRouter request failed: ${response.status} ${raw}`);
-  }
+  try {
+    if (mcpUrl) {
+      console.log(`[MCP] Connecting to ${mcpUrl}`);
+      const headers: Record<string, string> = {};
+      if (mcpAuthToken) {
+        headers['Authorization'] = `Bearer ${mcpAuthToken}`;
+      }
 
-  const body = (await response.json()) as {
-    choices?: Array<{
-      message?: {
-        content?: string;
+      const transport = new SSEClientTransport(new URL(mcpUrl), {
+        eventSourceInit: {
+          fetch: (url: string | URL | Request, init?: RequestInit) =>
+            fetch(url, { ...init, headers: { ...init?.headers, ...headers } }),
+        }
+      });
+      mcpClient = new Client({
+        name: 'TonDesk',
+        version: '1.0.0',
+      }, { capabilities: {} });
+
+      await mcpClient.connect(transport);
+      const mcpTools = await mcpClient.listTools();
+
+      tools = mcpTools.tools.map((t: any) => ({
+        type: 'function',
+        function: {
+          name: t.name,
+          description: t.description || '',
+          parameters: t.inputSchema,
+        },
+      }));
+      console.log(`[MCP] Fetched ${tools.length} tools`);
+    }
+
+    const messages: any[] = [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ];
+
+    while (true) {
+      const payload: any = {
+        model: aiModel,
+        temperature: 0,
+        response_format: { type: 'json_object' },
+        messages,
       };
-    }>;
-  };
 
-  const content = body.choices?.[0]?.message?.content;
-  if (!content) {
-    return { reply: 'I can only answer from the provided knowledge base.', intent: null };
+      if (tools.length > 0) {
+        payload.tools = tools;
+      }
+
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const raw = await response.text();
+        throw new Error(`OpenRouter request failed: ${response.status} ${raw}`);
+      }
+
+      const body = await response.json();
+      const message = body.choices?.[0]?.message;
+
+      if (!message) {
+        return { reply: 'I can only answer from the provided knowledge base.', intent: null };
+      }
+
+      messages.push(message);
+
+      if (message.tool_calls && message.tool_calls.length > 0 && mcpClient) {
+        for (const toolCall of message.tool_calls) {
+          const fnName = toolCall.function.name;
+          const fnArgs = JSON.parse(toolCall.function.arguments || '{}');
+          console.log(`[MCP] Executing tool: ${fnName}`, fnArgs);
+
+          try {
+            const toolResult = await mcpClient.callTool({
+              name: fnName,
+              arguments: fnArgs,
+            });
+
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              name: fnName,
+              content: JSON.stringify(toolResult.content),
+            });
+          } catch (toolError) {
+            console.error(`[MCP] Tool ${fnName} failed:`, toolError);
+            messages.push({
+              role: 'tool',
+              tool_call_id: toolCall.id,
+              name: fnName,
+              content: JSON.stringify({ error: String(toolError) }),
+            });
+          }
+        }
+        continue; // Go back to the top of the loop and call openrouter with the tool results
+      }
+
+      const content = message.content;
+      if (!content) {
+        return { reply: 'I can only answer from the provided knowledge base.', intent: null };
+      }
+
+      const parsed = parseJsonResult(content);
+      if (!parsed.reply) {
+        parsed.reply = 'I can only answer from the provided knowledge base.';
+      }
+
+      return parsed;
+    }
+  } catch (error) {
+    console.error('[askOpenRouter] Error:', error);
+    return { reply: 'An error occurred while communicating with the AI or MCP server.', intent: null };
+  } finally {
+    if (mcpClient) {
+      try {
+        await mcpClient.close();
+      } catch (err) {
+        console.error('[askOpenRouter] Error closing MCP client:', err);
+      }
+    }
   }
-
-  const parsed = parseJsonResult(content);
-  if (!parsed.reply) {
-    parsed.reply = 'I can only answer from the provided knowledge base.';
-  }
-
-  return parsed;
 }
 
 export async function POST(
@@ -167,7 +259,7 @@ export async function POST(
     }
 
     console.log(`[Webhook] Asking AI (${bot.aiModel}) with prompt: "${text}"`);
-    const ai = await askOpenRouter(bot.knowledgeBaseText, bot.aiModel, text);
+    const ai = await askOpenRouter(bot.knowledgeBaseText, bot.aiModel, text, bot.mcpUrl, bot.mcpAuthToken);
     console.log('[Webhook] AI Result:', JSON.stringify(ai, null, 2));
 
     let buyUrl: string | undefined;
