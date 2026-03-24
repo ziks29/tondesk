@@ -28,6 +28,8 @@ export default function Home() {
   const [knowledgeBaseText, setKnowledgeBaseText] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<File[]>([]);
+  const [mcpUrl, setMcpUrl] = useState('');
+  const [mcpAuthToken, setMcpAuthToken] = useState('');
   const [status, setStatus] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isDeploying, setIsDeploying] = useState(false);
@@ -83,6 +85,12 @@ export default function Home() {
       formData.append('ownerWallet', walletAddress);
       formData.append('knowledgeBaseText', knowledgeBaseText.trim());
       formData.append('aiModel', getSelectedModel());
+      if (mcpUrl.trim()) {
+        formData.append('mcpUrl', mcpUrl.trim());
+      }
+      if (mcpAuthToken.trim()) {
+        formData.append('mcpAuthToken', mcpAuthToken.trim());
+      }
 
       // Filter out empty URLs
       const validUrls = urls.filter(u => u.trim().startsWith('http'));
@@ -112,6 +120,8 @@ export default function Home() {
       setKnowledgeBaseText('');
       setUrls(['']);
       setFiles([]);
+      setMcpUrl('');
+      setMcpAuthToken('');
       fetchMyBots(); // Refresh list after deploy
     } catch (deployError) {
       const message =
@@ -276,6 +286,40 @@ export default function Home() {
                     </button>
                   </div>
                 </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
+                    Custom MCP Server URL (HTTP/SSE) (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://your-mcp-server.com/sse"
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
+                      ? 'border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600'
+                      : 'border-slate-200 bg-white/50 text-slate-900'
+                      }`}
+                    value={mcpUrl}
+                    onChange={(event) => setMcpUrl(event.currentTarget.value)}
+                  />
+                </div>
+
+                {mcpUrl && (
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
+                      MCP Auth Token (Optional)
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="Bearer token or API key for MCP server"
+                      className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
+                        ? 'border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600'
+                        : 'border-slate-200 bg-white/50 text-slate-900'
+                        }`}
+                      value={mcpAuthToken}
+                      onChange={(event) => setMcpAuthToken(event.currentTarget.value)}
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">

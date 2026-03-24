@@ -1,0 +1,17 @@
+
+> tondesk@0.1.0 dev /app
+> next dev
+
+ ⚠ Port 3000 is in use by an unknown process, using available port 3001 instead.
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.7 (Turbopack)
+   - Local:         http://localhost:3001
+   - Network:       http://192.168.0.2:3001
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1147ms
+ ○ Compiling / ...
+ GET / 200 in 5.4s (compile: 4.8s, render: 555ms)
+ POST / 200 in 72ms (compile: 20ms, render: 52ms)
+ POST / 200 in 64ms (compile: 16ms, render: 48ms)

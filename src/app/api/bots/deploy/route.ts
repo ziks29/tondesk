@@ -17,6 +17,8 @@ export async function POST(request: Request) {
     const manualText = formData.get('knowledgeBaseText') as string;
     const aiModel = formData.get('aiModel') as string || 'google/gemini-2.0-flash-001';
     const urlsJson = formData.get('urls') as string;
+    const mcpUrl = formData.get('mcpUrl') as string | null;
+    const mcpAuthToken = formData.get('mcpAuthToken') as string | null;
     const uploadedFiles = formData.getAll('files') as File[];
 
     if (!botToken || !ownerWallet) {
@@ -115,6 +117,8 @@ export async function POST(request: Request) {
         aiModel,
         isActive: true,
         secretToken,
+        mcpUrl: mcpUrl || null,
+        mcpAuthToken: mcpAuthToken || null,
       },
       update: {
         ownerWallet,
@@ -122,6 +126,8 @@ export async function POST(request: Request) {
         aiModel,
         isActive: true,
         secretToken,
+        mcpUrl: mcpUrl || null,
+        mcpAuthToken: mcpAuthToken || null,
       },
     });
 
