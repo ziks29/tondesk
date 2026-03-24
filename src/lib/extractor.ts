@@ -4,7 +4,32 @@ import { PDFParse } from 'pdf-parse';
 
 export async function extractFromUrl(url: string): Promise<string> {
   try {
-    const response = await fetch(url);
+    const parsedUrl = new URL(url);
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      throw new Error('Invalid URL protocol');
+    }
+
+    // Basic SSRF protection (hostname checks)
+    const hostname = parsedUrl.hostname;
+    if (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '::1' ||
+      hostname.startsWith('192.168.') ||
+      hostname.startsWith('10.') ||
+      hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./) ||
+      hostname === '169.254.169.254' ||
+      hostname.endsWith('.local')
+    ) {
+      throw new Error('Forbidden URL target');
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    const response = await fetch(url, { signal: controller.signal });
+    clearTimeout(timeoutId);
+
     if (!response.ok) return '';
     const html = await response.text();
     const $ = cheerio.load(html);

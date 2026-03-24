@@ -30,6 +30,9 @@ export async function POST(request: Request) {
     if (urlsJson) {
       try {
         const urls = JSON.parse(urlsJson) as string[];
+        if (urls.length > 5) {
+          return NextResponse.json({ error: 'Too many URLs provided (maximum 5).' }, { status: 400 });
+        }
         for (const url of urls) {
           const content = await extractFromUrl(url);
           if (content) extractedText += `\n\n[Content from URL: ${url}]\n${content}`;
@@ -39,8 +42,16 @@ export async function POST(request: Request) {
       }
     }
 
+    if (uploadedFiles.length > 5) {
+      return NextResponse.json({ error: 'Too many files uploaded (maximum 5).' }, { status: 400 });
+    }
+
     // Handle Files
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
     for (const file of uploadedFiles) {
+      if (file.size > MAX_FILE_SIZE) {
+         return NextResponse.json({ error: `File ${file.name} is too large (maximum 5MB).` }, { status: 400 });
+      }
       const content = await extractFromFile(file);
       if (content) extractedText += `\n\n[Content from File: ${file.name}]\n${content}`;
     }
