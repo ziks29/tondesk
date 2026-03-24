@@ -14,6 +14,7 @@
   "dependencies": {
     "@prisma/adapter-better-sqlite3": "^7.5.0",
     "@prisma/client": "^7.5.0",
+    "@tma.js/init-data-node": "^2.0.6",
     "@tma.js/sdk-react": "^3.0.11",
     "@tonconnect/ui-react": "^2.3.1",
     "better-sqlite3": "^12.8.0",
