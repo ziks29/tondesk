@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useMemo, useState } from 'react';
-import { initData, useSignal } from '@tma.js/sdk-react';
+import { initData, useRawInitData, useSignal } from '@tma.js/sdk-react';
 import {
   TonConnectButton,
   useTonAddress,
@@ -19,6 +19,7 @@ import { useTheme } from '@/core/theme/provider';
 
 export default function Home() {
   const tgUser = useSignal(initData.user);
+  const initDataRaw = useRawInitData();
   const wallet = useTonWallet();
   const walletAddress = useTonAddress();
   const [tonConnectUI] = useTonConnectUI();
@@ -93,8 +94,14 @@ export default function Home() {
         formData.append('files', file);
       });
 
+      const headers = new Headers();
+      if (initDataRaw) {
+        headers.set('Authorization', `tma ${initDataRaw}`);
+      }
+
       const response = await fetch('/api/bots/deploy', {
         method: 'POST',
+        headers,
         body: formData,
       });
 
@@ -131,7 +138,12 @@ export default function Home() {
     if (!walletAddress) return;
     setIsLoadingBots(true);
     try {
-      const res = await fetch(`/api/bots/list?wallet=${walletAddress}`);
+      const headers = new Headers();
+      if (initDataRaw) {
+        headers.set('Authorization', `tma ${initDataRaw}`);
+      }
+
+      const res = await fetch(`/api/bots/list?wallet=${walletAddress}`, { headers });
       const data = await res.json();
       if (data.ok) setMyBots(data.bots);
     } catch (e) {
@@ -147,9 +159,14 @@ export default function Home() {
 
   const toggleBotStatus = async (botId: string, currentStatus: boolean) => {
     try {
+      const headers = new Headers({ 'Content-Type': 'application/json' });
+      if (initDataRaw) {
+        headers.set('Authorization', `tma ${initDataRaw}`);
+      }
+
       const res = await fetch('/api/bots/toggle', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ botId, isActive: !currentStatus }),
       });
       if (res.ok) {
