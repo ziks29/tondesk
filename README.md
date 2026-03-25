@@ -13,14 +13,6 @@ Telegram Mini Apps platform using the following technologies and libraries:
 > required to use it for this project as well. Using other package managers, you
 > will receive a corresponding error.
 
-## Configuration
-
-Make sure to set the `TELEGRAM_BOT_TOKEN` in your `.env` file to your Telegram bot token. This is used by the server to validate `initData` coming from the Telegram Mini App securely. You can copy the variables from `.env.example`:
-
-```bash
-cp .env.example .env
-```
-
 ## Install Dependencies
 
 If you have just cloned this template, you should install the project

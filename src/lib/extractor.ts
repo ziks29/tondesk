@@ -69,10 +69,6 @@ export async function extractFromFile(file: File): Promise<string> {
       return buffer.toString('utf-8');
     }
 
-    if (file.name.toLowerCase().endsWith('.csv')) {
-      return buffer.toString('utf-8');
-    }
-
     return '';
   } catch (error) {
     console.error(`Error extracting from file ${file.name}:`, error);

@@ -22,10 +22,16 @@ function RootInner({ children }: PropsWithChildren) {
   const { isDarkMode } = useTheme();
   const initDataUser = useSignal(initData.user);
 
-  // Set the user locale
+  // Set the user locale and theme class
   useEffect(() => {
     initDataUser && setLocale(initDataUser.language_code);
-  }, [initDataUser]);
+
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [initDataUser, isDarkMode]);
 
   return (
     <TonConnectUIProvider manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json">
