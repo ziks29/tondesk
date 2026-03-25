@@ -520,7 +520,7 @@ export default function Home() {
                     <div className="flex items-start justify-between">
                       <div className="space-y-1">
                         <p className={`text-sm font-bold font-mono ${isDarkMode ? 'text-slate-200' : 'text-slate-800'}`}>
-                          {bot.botToken.split(':')[0]}:***
+                          {bot.botUsername ? `@${bot.botUsername}` : `${bot.botToken.split(':')[0]}:***`}
                         </p>
                         <p className="text-[10px] text-slate-500 uppercase tracking-tighter font-semibold">
                           Created {new Date(bot.createdAt).toLocaleDateString()}

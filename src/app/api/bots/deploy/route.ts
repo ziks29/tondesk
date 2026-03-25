@@ -80,14 +80,19 @@ export async function POST(request: Request) {
     const getMeBody = (await getMeResponse.json()) as {
       ok?: boolean;
       description?: string;
+      result?: {
+        username: string;
+      };
     };
 
-    if (!getMeResponse.ok || !getMeBody.ok) {
+    if (!getMeResponse.ok || !getMeBody.ok || !getMeBody.result) {
       return NextResponse.json(
         { error: `Invalid Telegram bot token. ${getMeBody.description ?? ''}`.trim() },
         { status: 400 },
       );
     }
+
+    const botUsername = getMeBody.result.username;
 
     const host = requestHeaders.get('x-forwarded-host') || requestHeaders.get('host') || '';
     const protocol = requestHeaders.get('x-forwarded-proto') || 'https';
@@ -133,6 +138,7 @@ export async function POST(request: Request) {
       where: { botToken },
       create: {
         botToken,
+        botUsername,
         ownerWallet,
         knowledgeBaseText: extractedText,
         aiModel,
@@ -142,6 +148,7 @@ export async function POST(request: Request) {
         welcomeMessage,
       },
       update: {
+        botUsername,
         ownerWallet,
         knowledgeBaseText: extractedText,
         aiModel,

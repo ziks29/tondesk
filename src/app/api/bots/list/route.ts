@@ -33,8 +33,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Missing wallet address' }, { status: 400 });
     }
 
-    const bots = await (prisma.bot as any).findMany({
-      where: { ownerWallet },
+    const bots = await prisma.bot.findMany({
+      where: { ownerWallet: ownerWallet as string },
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     });
 
     // Fetch unique users for all bots belonging to this owner in a single query
-    const botIds = bots.map((b: any) => b.id);
+    const botIds = bots.map((bot) => bot.id);
     const uniqueUsersGroups = await prisma.interaction.groupBy({
       by: ['botId', 'chatId'],
       where: { botId: { in: botIds } },
@@ -59,7 +59,7 @@ export async function GET(request: Request) {
       uniqueUserCounts[group.botId] = (uniqueUserCounts[group.botId] || 0) + 1;
     }
 
-    const enrichedBots = bots.map((bot: any) => ({
+    const enrichedBots = bots.map((bot) => ({
       ...bot,
       totalInteractions: bot._count.interactions,
       totalUniqueUsers: uniqueUserCounts[bot.id] || 0,
