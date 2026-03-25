@@ -19,6 +19,7 @@ type DeployBotSectionProps = {
   isWalletConnected: boolean;
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   onBotTokenChange: (value: string) => void;
+  onAiModelChange: (value: string) => void;
   onSystemPromptChange: (value: string) => void;
   onWelcomeMessageChange: (value: string) => void;
   onKnowledgeBaseChange: (value: string) => void;
@@ -42,6 +43,7 @@ export function DeployBotSection({
   isWalletConnected,
   onSubmit,
   onBotTokenChange,
+  onAiModelChange,
   onSystemPromptChange,
   onWelcomeMessageChange,
   onKnowledgeBaseChange,
@@ -87,6 +89,37 @@ export function DeployBotSection({
                 value={form.botToken}
                 onChange={(event) => onBotTokenChange(event.currentTarget.value)}
               />
+            </InputBlock>
+
+            <InputBlock label="AI Model">
+              <div className="grid gap-2">
+                {MODELS.map((model) => (
+                  <button
+                    key={model.id}
+                    type="button"
+                    onClick={() => onAiModelChange(model.id)}
+                    className={`flex w-full items-center justify-between rounded-xl border p-2.5 sm:p-3 text-left transition-all ${
+                      form.aiModel === model.id
+                        ? "border-[#0088cc] bg-[#0088cc]/10"
+                        : isDarkMode
+                          ? "border-slate-800 bg-slate-800/30 hover:border-slate-700"
+                          : "border-slate-100 bg-white/50 hover:border-slate-200"
+                    }`}
+                  >
+                    <div>
+                      <p
+                        className={`text-xs sm:text-sm font-bold ${form.aiModel === model.id ? "text-[#0088cc]" : isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                      >
+                        {model.name}
+                      </p>
+                      <p className="text-[11px] sm:text-xs text-slate-500">{model.desc}</p>
+                    </div>
+                    {form.aiModel === model.id && (
+                      <div className="h-2.5 w-2.5 rounded-full bg-[#0088cc] shrink-0 ml-2" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </InputBlock>
 
             <InputBlock label="System Prompt">
@@ -358,8 +391,6 @@ export function DeployBotSection({
 }
 
 function ModelHint({ isDarkMode }: { isDarkMode: boolean }) {
-  const defaultModel = MODELS[0];
-
   return (
     <div
       className={`rounded-xl border p-3 text-sm ${
@@ -378,8 +409,7 @@ function ModelHint({ isDarkMode }: { isDarkMode: boolean }) {
       <div
         className={`mt-1 text-xs ${isDarkMode ? "text-emerald-400/70" : "text-emerald-700/80"}`}
       >
-        Bot replies use credits from your connected wallet balance. Default AI
-        model: {defaultModel.name}.
+        Bot replies use credits from your connected wallet balance. Select your preferred AI model above.
       </div>
     </div>
   );

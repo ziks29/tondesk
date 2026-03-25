@@ -29,6 +29,7 @@ import {
 
 const initialDeployForm: DeployFormState = {
   botToken: "",
+  aiModel: DEFAULT_MODEL_ID,
   systemPrompt: "",
   welcomeMessage: "",
   knowledgeBaseText: "",
@@ -87,13 +88,6 @@ export default function Home() {
       headers.set("Authorization", `tma ${initDataRaw}`);
     }
     return headers;
-  };
-
-  const getSelectedModel = () => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem("tondesk_ai_model") || DEFAULT_MODEL_ID;
-    }
-    return DEFAULT_MODEL_ID;
   };
 
   const isFormValid = useMemo(() => {
@@ -173,7 +167,7 @@ export default function Home() {
       formData.append("botToken", deployForm.botToken.trim());
       formData.append("ownerWallet", walletAddress);
       formData.append("knowledgeBaseText", deployForm.knowledgeBaseText.trim());
-      formData.append("aiModel", getSelectedModel());
+      formData.append("aiModel", deployForm.aiModel);
 
       if (
         deployForm.systemPrompt.trim() &&
@@ -510,6 +504,9 @@ export default function Home() {
             onSubmit={handleDeploy}
             onBotTokenChange={(value) =>
               setDeployForm((current) => ({ ...current, botToken: value }))
+            }
+            onAiModelChange={(value) =>
+              setDeployForm((current) => ({ ...current, aiModel: value }))
             }
             onSystemPromptChange={(value) =>
               setDeployForm((current) => ({ ...current, systemPrompt: value }))

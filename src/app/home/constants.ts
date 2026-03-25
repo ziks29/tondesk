@@ -1,25 +1,24 @@
 export const MODELS = [
   {
     id: "google/gemini-2.0-flash-001",
-    name: "Gemini 2.0 Flash",
-    desc: "Fast & Smart (Default) • Web Search ✓",
+    name: "Google Gemini 2.0 Flash",
+    desc: "Fast & Smart (Default)",
   },
   {
-    id: "anthropic/claude-3.5-haiku-20241022",
-    name: "Claude 3.5 Haiku",
-    desc: "Lightweight & Efficient • Web Search ✓",
+    id: "stepfun/step-3.5-flash:free",
+    name: "StepFun Step 3.5 Flash",
+    desc: "Efficient & Cost-effective",
   },
   {
-    id: "meta-llama/llama-3.3-70b-instruct",
-    name: "Llama 3.3 70B",
-    desc: "Powerful Reasoning",
+    id: "deepseek/deepseek-v3.2",
+    name: "DeepSeek V3.2",
+    desc: "Advanced Reasoning",
   },
   {
-    id: "mistralai/mistral-7b-instruct:free",
-    name: "Mistral 7B",
-    desc: "Free Tier",
+    id: "google/gemini-3-flash-preview",
+    name: "Google Gemini 3 Flash Preview",
+    desc: "Latest Preview Model",
   },
-  { id: "deepseek/deepseek-chat", name: "DeepSeek V3", desc: "Advanced Logic" },
 ] as const;
 
 export const TOP_UP_AMOUNTS = [0.5, 1, 2] as const;

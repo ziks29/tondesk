@@ -34,6 +34,7 @@ export type BotRecord = {
 
 export type DeployFormState = {
   botToken: string;
+  aiModel: string;
   systemPrompt: string;
   welcomeMessage: string;
   knowledgeBaseText: string;
