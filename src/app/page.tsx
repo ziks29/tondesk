@@ -76,9 +76,6 @@ Never include markdown or extra text outside JSON.`;
   const [customTopUpAmount, setCustomTopUpAmount] = useState('3');
   const [walletStatus, setWalletStatus] = useState('');
   const [walletError, setWalletError] = useState('');
-  const showAdvancedSettings = false;
-  const setShowAdvancedSettings = () => {};
-
   const createAuthHeaders = (contentType?: string) => {
     const headers = new Headers();
     if (contentType) {
@@ -555,7 +552,6 @@ Never include markdown or extra text outside JSON.`;
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
               {TOP_UP_AMOUNTS.map((amount) => (
-                {false && (
                 <button
                   key={amount}
                   type="button"
@@ -565,7 +561,6 @@ Never include markdown or extra text outside JSON.`;
                 >
                   {isTopUpPending === amount ? 'Waiting...' : `Top up ${amount} TON`}
                 </button>
-                )}
               ))}
               </div>
 
@@ -894,19 +889,6 @@ Never include markdown or extra text outside JSON.`;
                   </div>
                 )}
 
-                <button
-                  type="button"
-                  onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
-                  className={`w-full flex items-center justify-between rounded-xl border px-4 py-3 text-sm font-semibold transition-all ${isDarkMode
-                    ? 'border-slate-800 bg-slate-800/30 text-slate-200 hover:bg-slate-800/50'
-                    : 'border-slate-200 bg-slate-100/50 text-slate-700 hover:bg-slate-100'
-                  }`}
-                >
-                  <span>Advanced Settings</span>
-                  <span className={`transform transition-transform ${showAdvancedSettings ? 'rotate-180' : ''}`}>
-                    ▼
-                  </span>
-                </button>
 
                 <Button
                   isLoading={isDeploying}
