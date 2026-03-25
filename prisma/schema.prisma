@@ -17,6 +17,7 @@ model Bot {
   secretToken       String
   systemPrompt      String?
   welcomeMessage    String?
+  urls              String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   interactions      Interaction[]

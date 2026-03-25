@@ -71,7 +71,7 @@ async function sendTelegramMessage(
   });
 }
 
-async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPrompt: string, customSystemPrompt: string | null) {
+async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPrompt: string, customSystemPrompt: string | null, urlsJson: string | null) {
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
@@ -81,7 +81,7 @@ async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPro
     } as OpenRouterResult;
   }
 
-  const systemPrompt = [
+  const promptParts = [
     customSystemPrompt || 'You are a strict Telegram support agent.',
     'Use ONLY the provided knowledge base to answer.',
     'If answer is not present in the KB, reply exactly: "I can only answer from the provided knowledge base."',
@@ -89,8 +89,64 @@ async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPro
     'Return STRICT JSON only with this shape:',
     '{"reply":"string","intent":null | {"intent":"buy","item":"string","price_in_ton":number}}',
     'Never include markdown or extra text outside JSON.',
-    `KNOWLEDGE_BASE:\n${knowledgeBaseText}`,
-  ].join('\n');
+  ];
+
+  if (urlsJson) {
+    try {
+      const parsedUrls = JSON.parse(urlsJson) as string[];
+      if (parsedUrls.length > 0) {
+        promptParts.push(`You may also reference, search on, or provide the following official URLs if relevant: ${parsedUrls.join(', ')}`);
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  let plugins: unknown[] | undefined = undefined;
+
+  if (urlsJson) {
+    try {
+      const parsedUrls = JSON.parse(urlsJson) as string[];
+      if (parsedUrls.length > 0) {
+        const domains = parsedUrls.map(u => {
+          try {
+            return new URL(u).hostname;
+          } catch {
+            return null;
+          }
+        }).filter(Boolean);
+
+        if (domains.length > 0) {
+          plugins = [
+            {
+              id: 'web',
+              include_domains: Array.from(new Set(domains)),
+            }
+          ];
+        }
+      }
+    } catch (e) {
+      // Ignore
+    }
+  }
+
+  promptParts.push(`KNOWLEDGE_BASE:\n${knowledgeBaseText}`);
+
+  const systemPrompt = promptParts.join('\n');
+
+  const payload: Record<string, unknown> = {
+    model: aiModel,
+    temperature: 0,
+    response_format: { type: 'json_object' },
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userPrompt },
+    ],
+  };
+
+  if (plugins) {
+    payload.plugins = plugins;
+  }
 
   const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -98,15 +154,7 @@ async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPro
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: aiModel,
-      temperature: 0,
-      response_format: { type: 'json_object' },
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
@@ -173,7 +221,7 @@ export async function POST(
     }
 
     console.log(`[Webhook] Asking AI (${bot.aiModel}) with prompt: "${text}"`);
-    const ai = await askOpenRouter(bot.knowledgeBaseText, bot.aiModel, text, bot.systemPrompt);
+    const ai = await askOpenRouter(bot.knowledgeBaseText, bot.aiModel, text, bot.systemPrompt, bot.urls);
     console.log('[Webhook] AI Result:', JSON.stringify(ai, null, 2));
 
     let buyUrl: string | undefined;

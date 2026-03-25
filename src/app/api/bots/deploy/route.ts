@@ -149,6 +149,15 @@ export async function POST(request: Request) {
       console.log(`[Deploy] Webhook successfully set to: ${webhookUrl}`);
     }
 
+    let parsedUrls: string[] = [];
+    if (urlsJson) {
+      try {
+        parsedUrls = JSON.parse(urlsJson) as string[];
+      } catch (e) {
+        // Ignored
+      }
+    }
+
     await prisma.bot.upsert({
       where: { botToken },
       create: {
@@ -161,6 +170,7 @@ export async function POST(request: Request) {
         secretToken,
         systemPrompt,
         welcomeMessage,
+        urls: parsedUrls.length > 0 ? JSON.stringify(parsedUrls) : null,
       },
       update: {
         botUsername,
@@ -171,6 +181,7 @@ export async function POST(request: Request) {
         secretToken,
         systemPrompt,
         welcomeMessage,
+        urls: parsedUrls.length > 0 ? JSON.stringify(parsedUrls) : null,
       },
     });
 
