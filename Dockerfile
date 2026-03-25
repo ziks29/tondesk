@@ -1,5 +1,8 @@
 FROM node:22-bookworm-slim
 
+ARG NEXT_PUBLIC_MASTER_WALLET_ADDRESS
+ENV NEXT_PUBLIC_MASTER_WALLET_ADDRESS=$NEXT_PUBLIC_MASTER_WALLET_ADDRESS
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
   openssl \
   python3 \
