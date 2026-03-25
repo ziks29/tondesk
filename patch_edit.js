@@ -1,4 +1,7 @@
-import { NextResponse } from 'next/server';
+const fs = require('fs');
+const content = fs.readFileSync('src/app/api/bots/edit/route.ts', 'utf8');
+
+const newContent = `import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { extractFromFile, extractFromUrl } from '@/lib/extractor';
 
@@ -43,7 +46,7 @@ export async function POST(request: Request) {
           if (globalState.pageCount >= globalState.maxPages) break;
           // Process sequentially to respect global limits strictly
           const content = await extractFromUrl(url, 2, globalState);
-          if (content) extractedText += `\n\n[Crawl Results for: ${url}]${content}`;
+          if (content) extractedText += \`\\n\\n[Crawl Results for: \${url}]\${content}\`;
         }
       } catch (e) {
         console.error('Error parsing URLs JSON:', e);
@@ -55,7 +58,7 @@ export async function POST(request: Request) {
     for (const file of uploadedFiles) {
       filePromises.push(
         extractFromFile(file).then(content => {
-          if (content) extractedText += `\n\n[Content from File: ${file.name}]\n${content}`;
+          if (content) extractedText += \`\\n\\n[Content from File: \${file.name}]\\n\${content}\`;
         })
       );
     }
@@ -82,3 +85,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to edit bot' }, { status: 500 });
   }
 }
+`;
+
+fs.writeFileSync('src/app/api/bots/edit/route.ts', newContent);
