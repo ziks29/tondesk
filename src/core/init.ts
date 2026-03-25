@@ -73,7 +73,7 @@ export async function init(options: {
     miniApp.mount();
     themeParams.bindCssVars();
   } catch (e) {
-    // miniApp not available
+    console.error('miniApp not available', e);
   }
 
   try {
@@ -81,6 +81,6 @@ export async function init(options: {
       viewport.bindCssVars();
     });
   } catch (e) {
-    // viewport not available
+    console.error('viewport not available', e);
   }
 }
