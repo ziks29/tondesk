@@ -56,17 +56,17 @@ export function DeployBotSection({
 }: DeployBotSectionProps) {
   return (
     <section
-      className={`col-span-1 h-fit rounded-[2.5rem] border p-4 shadow-none backdrop-blur-2xl transition-all md:p-8 md:shadow-2xl lg:col-span-5 lg:p-10 ${
+      className={`col-span-1 h-fit rounded-2xl sm:rounded-[2.5rem] border p-4 sm:p-6 shadow-none backdrop-blur-2xl transition-all md:p-8 md:shadow-2xl lg:col-span-5 lg:p-10 ${
         isDarkMode
           ? "border-white/10 bg-slate-900/70 shadow-black/60"
           : "border-white/60 bg-white/80 shadow-[0_32px_120px_-40px_rgba(0,136,204,0.35)]"
       }`}
     >
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="space-y-4">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <h2
-              className={`px-1 text-lg font-semibold ${isDarkMode ? "text-white" : "text-slate-800"}`}
+              className={`text-lg sm:text-xl font-semibold ${isDarkMode ? "text-white" : "text-slate-800"}`}
             >
               Deploy New Bot
             </h2>
@@ -78,7 +78,7 @@ export function DeployBotSection({
               Settings
             </Link>
           </div>
-          <form className="space-y-5" onSubmit={onSubmit}>
+          <form className="space-y-4 sm:space-y-5" onSubmit={onSubmit}>
             <InputBlock label="Telegram Bot Token">
               <input
                 type="text"
@@ -127,9 +127,9 @@ export function DeployBotSection({
             </InputBlock>
 
             <InputBlock label="Add Documentation URLs">
-              <div className="space-y-2">
+              <div className="space-y-2.5 sm:space-y-2">
                 {form.urls.map((url, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div key={index} className="flex flex-col sm:flex-row gap-2 sm:gap-2">
                     <div className="relative flex-1">
                       <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <input
@@ -146,9 +146,9 @@ export function DeployBotSection({
                       <button
                         type="button"
                         onClick={() => onRemoveUrl(index)}
-                        className="p-2 text-slate-400 transition-colors hover:text-red-500"
+                        className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-5 sm:h-4 w-5 sm:w-4" />
                       </button>
                     )}
                   </div>
@@ -166,19 +166,19 @@ export function DeployBotSection({
             <InputBlock label="Upload Documents (PDF, DOCX, TXT, CSV)">
               <div className="mt-1">
                 <label
-                  className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed py-6 transition-all hover:border-[#0088cc]/50 hover:bg-[#0088cc]/5 ${
+                  className={`flex cursor-pointer flex-col items-center justify-center rounded-xl sm:rounded-2xl border-2 border-dashed py-8 sm:py-10 transition-all hover:border-[#0088cc]/50 hover:bg-[#0088cc]/5 ${
                     isDarkMode
                       ? "border-slate-800 bg-slate-800/20 hover:bg-[#0088cc]/10"
                       : "border-slate-200 bg-slate-50/50"
                   }`}
                 >
-                  <Upload className="mb-2 h-6 w-6 text-slate-400" />
+                  <Upload className="mb-3 h-8 sm:h-6 w-8 sm:w-6 text-slate-400" />
                   <p
-                    className={`text-xs font-medium ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}
+                    className={`text-sm sm:text-xs font-medium ${isDarkMode ? "text-slate-300" : "text-slate-600"}`}
                   >
                     Click to upload
                   </p>
-                  <p className="mt-0.5 text-xs text-slate-500">
+                  <p className="mt-1 text-xs sm:text-xs text-slate-500">
                     PDF, Word, Text, or CSV up to 10MB each
                   </p>
                   <input
@@ -228,18 +228,18 @@ export function DeployBotSection({
             </InputBlock>
 
             <div
-              className={`rounded-2xl border p-4 ${
+              className={`rounded-xl sm:rounded-2xl border p-4 sm:p-5 ${
                 isDarkMode
                   ? "border-slate-800 bg-slate-800/30"
                   : "border-slate-200 bg-white/50"
               }`}
             >
               <p
-                className={`mb-3 text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                className={`mb-3 sm:mb-4 text-base sm:text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
               >
                 Crawl Settings
               </p>
-              <div className="space-y-3">
+              <div className="space-y-4 sm:space-y-3">
                 <div>
                   <label className="text-xs font-medium text-slate-500">
                     Max Crawl Depth (levels)
@@ -290,26 +290,26 @@ export function DeployBotSection({
             </div>
 
             <div
-              className={`flex items-center justify-between rounded-2xl border p-4 ${
+              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl sm:rounded-2xl border p-4 sm:p-5 ${
                 isDarkMode
                   ? "border-slate-800 bg-slate-800/30"
                   : "border-slate-200 bg-white/50"
               }`}
             >
-              <div>
+              <div className="flex-1">
                 <p
-                  className={`text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                  className={`text-base sm:text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
                 >
                   Web Search
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-sm sm:text-xs text-slate-500 mt-1">
                   Let the bot search the web to supplement its knowledge base
                 </p>
               </div>
               <button
                 type="button"
                 onClick={onToggleWebSearch}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                className={`relative inline-flex h-7 sm:h-6 w-12 sm:w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
                   form.webSearchEnabled
                     ? "bg-[#0088cc]"
                     : isDarkMode
@@ -318,8 +318,8 @@ export function DeployBotSection({
                 }`}
               >
                 <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    form.webSearchEnabled ? "translate-x-5" : "translate-x-0"
+                  className={`pointer-events-none inline-block h-6 sm:h-5 w-6 sm:w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    form.webSearchEnabled ? "translate-x-5 sm:translate-x-5" : "translate-x-0.5 sm:translate-x-0"
                   }`}
                 />
               </button>
@@ -328,13 +328,13 @@ export function DeployBotSection({
             <ModelHint isDarkMode={isDarkMode} />
 
             {error && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="rounded-lg sm:rounded-xl border border-red-200 bg-red-50 px-4 sm:px-3 py-3 sm:py-2 text-sm text-red-700">
                 {error}
               </div>
             )}
 
             {status && (
-              <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <div className="rounded-lg sm:rounded-xl border border-emerald-200 bg-emerald-50 px-4 sm:px-3 py-3 sm:py-2 text-sm text-emerald-700">
                 {status}
               </div>
             )}
@@ -403,7 +403,7 @@ function InputBlock({
 }
 
 function fieldClassName(isDarkMode: boolean) {
-  return `w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${
+  return `w-full rounded-xl sm:rounded-2xl border px-4 py-3 sm:py-3.5 text-base sm:text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${
     isDarkMode
       ? "border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600"
       : "border-slate-200 bg-white/50 text-slate-900"
@@ -411,7 +411,7 @@ function fieldClassName(isDarkMode: boolean) {
 }
 
 function urlFieldClassName(isDarkMode: boolean) {
-  return `w-full rounded-xl border py-2.5 pl-9 pr-4 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${
+  return `w-full rounded-lg sm:rounded-xl border py-2.5 sm:py-3 pl-9 pr-4 text-base sm:text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${
     isDarkMode
       ? "border-slate-800 bg-slate-800/50 text-white"
       : "border-slate-200 bg-white/50 text-slate-900"
@@ -419,7 +419,7 @@ function urlFieldClassName(isDarkMode: boolean) {
 }
 
 function settingsFieldClassName(isDarkMode: boolean) {
-  return `mt-1 w-full rounded-lg border px-3 py-2 text-sm transition-colors ${
+  return `mt-2 w-full rounded-lg border px-3 py-2.5 text-base sm:text-sm transition-colors ${
     isDarkMode
       ? "border-slate-700 bg-slate-900/50 text-white focus:border-[#0088cc] focus:outline-none"
       : "border-slate-200 bg-white text-slate-900 focus:border-[#0088cc] focus:outline-none"

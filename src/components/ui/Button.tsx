@@ -12,7 +12,7 @@ export function Button({ className, isLoading, children, disabled, ...props }: B
     <button
       disabled={disabled || isLoading}
       className={cn(
-        "w-full rounded-2xl bg-[#0088cc] py-4 text-sm font-bold text-white shadow-lg shadow-[#0088cc]/25 transition-all hover:bg-[#007ebd] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
+        "w-full rounded-xl sm:rounded-2xl bg-[#0088cc] py-3.5 sm:py-4 text-base sm:text-sm font-bold text-white shadow-lg shadow-[#0088cc]/25 transition-all hover:bg-[#007ebd] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none",
         className
       )}
       {...props}

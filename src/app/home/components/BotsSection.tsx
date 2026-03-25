@@ -63,10 +63,10 @@ export function BotsSection({
   onToggleEditWebSearch,
 }: BotsSectionProps) {
   return (
-    <section className="col-span-1 space-y-6 px-0 lg:col-span-7">
-      <div className="flex items-baseline justify-between px-0">
+    <section className="col-span-1 space-y-4 sm:space-y-6 px-0 lg:col-span-7">
+      <div className="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2 px-0">
         <h2
-          className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-slate-800"}`}
+          className={`text-lg sm:text-xl font-bold ${isDarkMode ? "text-white" : "text-slate-800"}`}
         >
           My Bots
         </h2>
@@ -84,19 +84,19 @@ export function BotsSection({
         </div>
       ) : bots.length === 0 ? (
         <div
-          className={`rounded-3xl border border-dashed p-10 text-center transition-all ${
+          className={`rounded-2xl sm:rounded-3xl border border-dashed p-6 sm:p-10 text-center transition-all ${
             isDarkMode
               ? "border-slate-800 bg-slate-900/40 text-slate-500"
               : "border-slate-200 bg-slate-50 text-slate-400"
           }`}
         >
-          <p className="text-sm font-medium">No bots deployed yet.</p>
-          <p className="mt-1 text-xs">
+          <p className="text-base sm:text-sm font-medium">No bots deployed yet.</p>
+          <p className="mt-2 sm:mt-1 text-sm sm:text-xs">
             Connect your wallet and deploy your first bot to see it here.
           </p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {bots.map((bot) => (
             <BotCard
               key={bot.id}
@@ -181,20 +181,20 @@ function BotCard({
 }: BotCardProps) {
   return (
     <div
-      className={`group rounded-[2.5rem] border p-4 transition-all hover:scale-[1.01] md:p-6 ${
+      className={`group rounded-2xl sm:rounded-[2.5rem] border p-4 sm:p-5 md:p-6 transition-all hover:scale-[1.01] ${
         isDarkMode
           ? "border-white/5 bg-slate-900/80 shadow-black/40 hover:bg-slate-900"
           : "border-slate-100 bg-white shadow-xl shadow-slate-200/50 hover:bg-slate-50/50"
       }`}
     >
-      <div className="flex flex-col items-start justify-between gap-4 lg:flex-row">
-        <div className="flex-1 space-y-1">
+      <div className="flex flex-col items-start justify-between gap-3 sm:gap-4 lg:flex-row w-full">
+        <div className="flex-1 space-y-1.5 min-w-0">
           <p
-            className={`font-mono text-sm font-bold ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}
+            className={`font-mono text-sm sm:text-sm font-bold truncate ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}
           >
             {bot.botUsername ? `@${bot.botUsername}` : `${bot.botToken.split(":")[0]}:***`}
           </p>
-          <p className="text-[10px] font-semibold uppercase tracking-tighter text-slate-500">
+          <p className="text-xs sm:text-[10px] font-semibold uppercase tracking-tighter text-slate-500">
             Created {new Date(bot.createdAt).toLocaleDateString()}
           </p>
         </div>

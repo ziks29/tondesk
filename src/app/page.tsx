@@ -477,7 +477,7 @@ export default function Home() {
         />
       </div>
 
-      <main className="relative mx-auto min-h-screen w-full max-w-none px-0 py-6 md:max-w-7xl md:px-8 md:py-12 lg:px-12 lg:py-16">
+      <main className="relative mx-auto min-h-screen w-full max-w-none px-4 py-4 sm:px-6 sm:py-6 md:max-w-7xl md:px-8 md:py-12 lg:px-12 lg:py-16">
         <HomeHero
           isDarkMode={isDarkMode}
           telegramUsername={tgUser?.username ?? "telegram-user"}
@@ -498,7 +498,7 @@ export default function Home() {
           onCustomTopUp={() => handleTopUp(Number(customTopUpAmount))}
         />
 
-        <div className="grid grid-cols-1 gap-0 px-0 md:gap-6 lg:grid-cols-12 lg:gap-8">
+        <div className="grid grid-cols-1 gap-4 px-0 sm:gap-5 md:gap-6 lg:grid-cols-12 lg:gap-8">
           <DeployBotSection
             isDarkMode={isDarkMode}
             form={deployForm}
