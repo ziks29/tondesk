@@ -4,7 +4,12 @@ import { PDFParse } from 'pdf-parse';
 
 function normalizeUrl(urlStr: string): string {
   try {
-    const url = new URL(urlStr);
+    let processedUrl = urlStr.trim();
+    // Add protocol if missing
+    if (!processedUrl.match(/^https?:\/\//i)) {
+      processedUrl = 'https://' + processedUrl;
+    }
+    const url = new URL(processedUrl);
     url.hash = ''; // Remove fragment
     let href = url.href;
     if (href.endsWith('/')) {
@@ -12,7 +17,7 @@ function normalizeUrl(urlStr: string): string {
     }
     return href;
   } catch {
-    return urlStr;
+    throw new Error(`Invalid URL: ${urlStr}`);
   }
 }
 

@@ -142,6 +142,41 @@ Check out
 the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for
 more details.
 
+## Docker
+
+This repository includes a Docker setup for the Next.js app, Prisma migrations,
+and the SQLite database.
+
+Start the app with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+The container will:
+
+- install dependencies with `pnpm`
+- generate the Prisma client
+- build the Next.js app
+- run `prisma migrate deploy` on startup
+- start the production server on port `3000`
+
+The SQLite database is stored in a named Docker volume, and inside the
+container `DATABASE_URL` is overridden to `file:./data/dev.db` so database data
+persists across container rebuilds.
+
+To stop the app:
+
+```bash
+docker compose down
+```
+
+To stop it and remove the database volume too:
+
+```bash
+docker compose down -v
+```
+
 ## Useful Links
 
 - [Platform documentation](https://docs.telegram-mini-apps.com/)

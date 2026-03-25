@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm prisma:generate)",
+      "Bash(pnpm build:*)",
+      "WebFetch(domain:openrouter.ai)"
+    ]
+  }
+}

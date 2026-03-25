@@ -8,8 +8,8 @@ import { Page } from '@/components/Page';
 import { useTheme } from '@/core/theme/provider';
 
 const MODELS = [
-  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', desc: 'Fast & Smart (Default)' },
-  { id: 'anthropic/claude-3.5-haiku-20241022', name: 'Claude 3.5 Haiku', desc: 'Lightweight & Efficient' },
+  { id: 'google/gemini-2.0-flash-001', name: 'Gemini 2.0 Flash', desc: 'Fast & Smart (Default) • Web Search ✓' },
+  { id: 'anthropic/claude-3.5-haiku-20241022', name: 'Claude 3.5 Haiku', desc: 'Lightweight & Efficient • Web Search ✓' },
   { id: 'meta-llama/llama-3.3-70b-instruct', name: 'Llama 3.3 70B', desc: 'Powerful Reasoning' },
   { id: 'mistralai/mistral-7b-instruct:free', name: 'Mistral 7B', desc: 'Free Tier' },
   { id: 'deepseek/deepseek-chat', name: 'DeepSeek V3', desc: 'Advanced Logic' },

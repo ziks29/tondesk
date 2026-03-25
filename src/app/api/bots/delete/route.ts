@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { requireTelegramAuth } from '@/lib/server-auth';
 
 export async function POST(request: Request) {
   try {
+    await requireTelegramAuth();
+
     const { botId, ownerWallet } = await request.json();
 
     if (!botId || !ownerWallet) {

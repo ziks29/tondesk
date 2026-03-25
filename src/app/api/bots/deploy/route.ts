@@ -1,11 +1,9 @@
-import { randomUUID } from 'node:crypto';
-import { headers } from 'next/headers';
-import { NextResponse } from 'next/server';
+import { randomUUID } from "node:crypto";
+import { NextResponse } from "next/server";
 
-import { validateTmaAuth } from '@/lib/auth';
-
-import { extractFromFile, extractFromUrl } from '@/lib/extractor';
-import { prisma } from '@/lib/prisma';
+import { extractFromFile, extractFromUrl } from "@/lib/extractor";
+import { prisma } from "@/lib/prisma";
+import { requireTelegramAuth } from "@/lib/server-auth";
 
 function telegramApiUrl(botToken: string, method: string) {
   return `https://api.telegram.org/bot${botToken}/${method}`;
@@ -13,48 +11,40 @@ function telegramApiUrl(botToken: string, method: string) {
 
 export async function POST(request: Request) {
   try {
-    const requestHeaders = await headers();
-    const authHeader = requestHeaders.get('authorization');
-    const [authType, authData = ''] = (authHeader || '').split(' ');
-
-    if (authType !== 'tma' || !authData) {
-      return NextResponse.json({ error: 'Unauthorized: missing or invalid tma auth header' }, { status: 401 });
-    }
-
-    const platformBotToken = process.env.TELEGRAM_BOT_TOKEN;
-    if (!platformBotToken) {
-      console.error('TELEGRAM_BOT_TOKEN is not set');
-      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
-    }
-
-    try {
-      validateTmaAuth(authData, platformBotToken);
-    } catch (e) {
-      return NextResponse.json({ error: 'Unauthorized: invalid initData' }, { status: 401 });
-    }
+    const { requestHeaders } = await requireTelegramAuth();
 
     const formData = await request.formData();
-    const botToken = formData.get('botToken') as string;
-    const ownerWallet = formData.get('ownerWallet') as string;
-    const manualText = formData.get('knowledgeBaseText') as string;
-    const aiModel = formData.get('aiModel') as string || 'google/gemini-2.0-flash-001';
-    const systemPrompt = formData.get('systemPrompt') as string | null;
-    const welcomeMessage = formData.get('welcomeMessage') as string | null;
-    const urlsJson = formData.get('urls') as string;
-    const uploadedFiles = formData.getAll('files') as File[];
+    const botToken = formData.get("botToken") as string;
+    const ownerWallet = formData.get("ownerWallet") as string;
+    const manualText = formData.get("knowledgeBaseText") as string;
+    const aiModel =
+      (formData.get("aiModel") as string) || "google/gemini-2.0-flash-001";
+    const systemPrompt = formData.get("systemPrompt") as string | null;
+    const welcomeMessage = formData.get("welcomeMessage") as string | null;
+    const webSearchEnabled = formData.get("webSearchEnabled") === "true";
+    const crawlMaxDepth =
+      parseInt(formData.get("crawlMaxDepth") as string) || 2;
+    const crawlMaxPages =
+      parseInt(formData.get("crawlMaxPages") as string) || 10;
+    const urlsJson = formData.get("urls") as string;
+    const uploadedFiles = formData.getAll("files") as File[];
 
     if (!botToken || !ownerWallet) {
-      return NextResponse.json({ error: 'Missing mandatory fields.' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing mandatory fields." },
+        { status: 400 },
+      );
     }
 
     // Extraction Step
-    let extractedText = manualText || '';
-    
+    let extractedText = manualText || "";
+    const crawledUrls: string[] = [];
+
     // Parse and handle URLs
     const globalState = {
       visited: new Set<string>(),
       pageCount: 0,
-      maxPages: 10,
+      maxPages: crawlMaxPages,
     };
 
     if (urlsJson) {
@@ -62,12 +52,29 @@ export async function POST(request: Request) {
         const urls = JSON.parse(urlsJson) as string[];
         for (const url of urls) {
           if (globalState.pageCount >= globalState.maxPages) break;
-          // Process sequentially to respect global limits strictly
-          const content = await extractFromUrl(url, 2, globalState);
-          if (content) extractedText += `\n\n[Crawl Results for: ${url}]${content}`;
+          try {
+            // Process sequentially to respect global limits strictly
+            const content = await extractFromUrl(
+              url,
+              crawlMaxDepth,
+              globalState,
+            );
+            if (content) {
+              extractedText += `\n\n[Crawl Results for: ${url}]${content}`;
+              crawledUrls.push(url);
+            }
+          } catch (e) {
+            const errorMsg =
+              e instanceof Error ? e.message : "Failed to extract from URL";
+            console.error(`Error extracting from URL ${url}:`, errorMsg);
+            return NextResponse.json(
+              { error: `Invalid URL: ${url}` },
+              { status: 400 },
+            );
+          }
         }
       } catch (e) {
-        console.error('Error parsing URLs JSON:', e);
+        console.error("Error parsing URLs JSON:", e);
       }
     }
 
@@ -75,9 +82,10 @@ export async function POST(request: Request) {
     const filePromises: Promise<void>[] = [];
     for (const file of uploadedFiles) {
       filePromises.push(
-        extractFromFile(file).then(content => {
-          if (content) extractedText += `\n\n[Content from File: ${file.name}]\n${content}`;
-        })
+        extractFromFile(file).then((content) => {
+          if (content)
+            extractedText += `\n\n[Content from File: ${file.name}]\n${content}`;
+        }),
       );
     }
 
@@ -86,12 +94,12 @@ export async function POST(request: Request) {
 
     if (extractedText.trim().length < 10) {
       return NextResponse.json(
-        { error: 'Knowledge base is empty or too small.' },
+        { error: "Knowledge base is empty or too small." },
         { status: 400 },
       );
     }
 
-    const getMeResponse = await fetch(telegramApiUrl(botToken, 'getMe'));
+    const getMeResponse = await fetch(telegramApiUrl(botToken, "getMe"));
     const getMeBody = (await getMeResponse.json()) as {
       ok?: boolean;
       description?: string;
@@ -102,37 +110,50 @@ export async function POST(request: Request) {
 
     if (!getMeResponse.ok || !getMeBody.ok || !getMeBody.result) {
       return NextResponse.json(
-        { error: `Invalid Telegram bot token. ${getMeBody.description ?? ''}`.trim() },
+        {
+          error:
+            `Invalid Telegram bot token. ${getMeBody.description ?? ""}`.trim(),
+        },
         { status: 400 },
       );
     }
 
     const botUsername = getMeBody.result.username;
 
-    const host = requestHeaders.get('x-forwarded-host') || requestHeaders.get('host') || '';
-    const protocol = requestHeaders.get('x-forwarded-proto') || 'https';
+    const host =
+      requestHeaders.get("x-forwarded-host") ||
+      requestHeaders.get("host") ||
+      "";
+    const protocol = requestHeaders.get("x-forwarded-proto") || "https";
 
     // Use environment variable if provided, otherwise detect from headers
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || (host ? `${protocol}://${host}` : '');
-    
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL || (host ? `${protocol}://${host}` : "");
+
     if (!appUrl) {
-      return NextResponse.json({ error: 'Unable to detect public host.' }, { status: 500 });
+      return NextResponse.json(
+        { error: "Unable to detect public host." },
+        { status: 500 },
+      );
     }
 
     const secretToken = randomUUID();
     const webhookUrl = `${appUrl}/api/webhook/${botToken}`;
 
-    const webhookResponse = await fetch(telegramApiUrl(botToken, 'setWebhook'), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    const webhookResponse = await fetch(
+      telegramApiUrl(botToken, "setWebhook"),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          url: webhookUrl,
+          secret_token: secretToken,
+          allowed_updates: ["message"],
+        }),
       },
-      body: JSON.stringify({
-        url: webhookUrl,
-        secret_token: secretToken,
-        allowed_updates: ['message'],
-      }),
-    });
+    );
 
     const webhookBody = (await webhookResponse.json()) as {
       ok?: boolean;
@@ -142,7 +163,7 @@ export async function POST(request: Request) {
     if (!webhookResponse.ok || !webhookBody.ok) {
       console.error(`[Deploy] setWebhook failed: ${webhookBody.description}`);
       return NextResponse.json(
-        { error: `setWebhook failed. ${webhookBody.description ?? ''}`.trim() },
+        { error: `setWebhook failed. ${webhookBody.description ?? ""}`.trim() },
         { status: 400 },
       );
     } else {
@@ -155,34 +176,50 @@ export async function POST(request: Request) {
         botToken,
         botUsername,
         ownerWallet,
+        userWalletAddress: ownerWallet,
         knowledgeBaseText: extractedText,
+        crawledUrls: JSON.stringify(crawledUrls),
         aiModel,
         isActive: true,
         secretToken,
         systemPrompt,
         welcomeMessage,
+        webSearchEnabled,
+        crawlMaxDepth,
+        crawlMaxPages,
       },
       update: {
         botUsername,
         ownerWallet,
+        userWalletAddress: ownerWallet,
         knowledgeBaseText: extractedText,
+        crawledUrls: JSON.stringify(crawledUrls),
         aiModel,
         isActive: true,
         secretToken,
         systemPrompt,
         welcomeMessage,
+        webSearchEnabled,
+        crawlMaxDepth,
+        crawlMaxPages,
       },
+    });
+
+    await prisma.user.upsert({
+      where: { walletAddress: ownerWallet },
+      update: {},
+      create: { walletAddress: ownerWallet },
     });
 
     return NextResponse.json({
       ok: true,
-      message: 'Bot deployed and webhook registered successfully.',
+      message: "Bot deployed and webhook registered successfully.",
       webhookUrl,
     });
   } catch (error) {
-    console.error('Deploy route error:', error);
+    console.error("Deploy route error:", error);
     return NextResponse.json(
-      { error: 'Unexpected server error while deploying bot.' },
+      { error: "Unexpected server error while deploying bot." },
       { status: 500 },
     );
   }

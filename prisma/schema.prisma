@@ -6,17 +6,34 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  walletAddress  String   @id // TON wallet address as primary identifier
+  credits        Float    @default(0) // Available credits for bot interactions
+  totalTopups    Float    @default(0) // Total amount topped up (for analytics)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  bots           Bot[]
+  transactions   Transaction[]
+}
+
 model Bot {
   id                String  @id @default(cuid())
   botToken          String  @unique
   botUsername       String?
-  ownerWallet       String
+  ownerWallet       String  // For earnings: where bot owner receives payments
+  userWalletAddress String? // Reference to User (nullable for migration)
+  user              User?   @relation(fields: [userWalletAddress], references: [walletAddress], onDelete: Cascade)
   knowledgeBaseText String
+  crawledUrls       String  @default("[]") // JSON array of URLs used to generate knowledge base
   aiModel           String  @default("google/gemini-2.0-flash-001")
   isActive          Boolean @default(true)
   secretToken       String
   systemPrompt      String?
   welcomeMessage    String?
+  webSearchEnabled  Boolean @default(false) // OpenRouter web search plugin - disabled by default to avoid unexpected charges
+  crawlMaxDepth     Int     @default(2) // Maximum depth for URL crawling (2 levels)
+  crawlMaxPages     Int     @default(10) // Maximum pages to crawl per bot deployment
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   interactions      Interaction[]
@@ -30,5 +47,20 @@ model Interaction {
   userInput   String
   aiResponse  String
   aiIntent    String?  // Store as JSON string
+  creditsUsed Float    @default(0.1) // Credits deducted for this interaction
   createdAt   DateTime @default(now())
+}
+
+model Transaction {
+  id                String   @id @default(cuid())
+  walletAddress     String
+  user              User     @relation(fields: [walletAddress], references: [walletAddress], onDelete: Cascade)
+  amount            Float    // Amount in TON
+  credits           Float    // Credits received
+  type              String   // "topup" or "usage"
+  tonConnectTxHash  String?  // Transaction hash for top-ups
+  onchainTxHash     String?  @unique
+  verifiedAt        DateTime?
+  status            String   @default("pending") // pending, completed, failed
+  createdAt         DateTime @default(now())
 }

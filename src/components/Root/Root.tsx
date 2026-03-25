@@ -3,8 +3,6 @@
 import { type PropsWithChildren, useEffect } from 'react';
 import {
   initData,
-  miniApp,
-  useLaunchParams,
   useSignal,
 } from '@tma.js/sdk-react';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
@@ -18,9 +16,12 @@ import { useTheme } from '@/core/theme/provider';
 import './styles.css';
 
 function RootInner({ children }: PropsWithChildren) {
-  const lp = useLaunchParams();
   const { isDarkMode } = useTheme();
   const initDataUser = useSignal(initData.user);
+  const manifestUrl =
+    typeof window === 'undefined'
+      ? '/api/tonconnect-manifest'
+      : `${window.location.origin}/api/tonconnect-manifest`;
 
   // Set the user locale
   useEffect(() => {
@@ -28,7 +29,14 @@ function RootInner({ children }: PropsWithChildren) {
   }, [initDataUser]);
 
   return (
-    <TonConnectUIProvider manifestUrl="https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json">
+    <TonConnectUIProvider
+      manifestUrl={manifestUrl}
+      actionsConfiguration={{
+        modals: 'all',
+        notifications: 'all',
+        returnStrategy: 'back',
+      }}
+    >
       <div className={isDarkMode ? 'dark' : ''}>
         {children}
       </div>

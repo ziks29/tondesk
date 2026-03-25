@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.gitignore
+.env
+.env.*
+dev.db
+prisma/dev.db
+start.log
+coverage
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
