@@ -26,6 +26,8 @@ export default function Home() {
   const { isDarkMode } = useTheme();
 
   const [botToken, setBotToken] = useState('');
+  const [systemPrompt, setSystemPrompt] = useState('');
+  const [welcomeMessage, setWelcomeMessage] = useState('');
   const [knowledgeBaseText, setKnowledgeBaseText] = useState('');
   const [urls, setUrls] = useState<string[]>(['']);
   const [files, setFiles] = useState<File[]>([]);
@@ -84,6 +86,8 @@ export default function Home() {
       formData.append('ownerWallet', walletAddress);
       formData.append('knowledgeBaseText', knowledgeBaseText.trim());
       formData.append('aiModel', getSelectedModel());
+      if (systemPrompt.trim()) formData.append('systemPrompt', systemPrompt.trim());
+      if (welcomeMessage.trim()) formData.append('welcomeMessage', welcomeMessage.trim());
 
       // Filter out empty URLs
       const validUrls = urls.filter(u => u.trim().startsWith('http'));
@@ -117,6 +121,8 @@ export default function Home() {
       setStatus(data.message || 'Bot deployed successfully.');
       setBotToken('');
       setKnowledgeBaseText('');
+      setSystemPrompt('');
+      setWelcomeMessage('');
       setUrls(['']);
       setFiles([]);
       fetchMyBots(); // Refresh list after deploy
@@ -133,6 +139,11 @@ export default function Home() {
 
   const [myBots, setMyBots] = useState<any[]>([]);
   const [isLoadingBots, setIsLoadingBots] = useState(false);
+
+  // Edit Bot State
+  const [editingBotId, setEditingBotId] = useState<string | null>(null);
+  const [editKbText, setEditKbText] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const fetchMyBots = async () => {
     if (!walletAddress) return;
@@ -174,6 +185,66 @@ export default function Home() {
       }
     } catch (e) {
       console.error('Failed to toggle bot:', e);
+    }
+  };
+
+  const startEditingBot = (bot: any) => {
+    setEditingBotId(bot.id);
+    setEditKbText(bot.knowledgeBaseText || '');
+  };
+
+  const cancelEditingBot = () => {
+    setEditingBotId(null);
+    setEditKbText('');
+  };
+
+  const saveBotEdits = async (botId: string) => {
+    if (!walletAddress) return;
+    setIsSavingEdit(true);
+    try {
+      const res = await fetch('/api/bots/edit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          botId,
+          ownerWallet: walletAddress,
+          knowledgeBaseText: editKbText.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setMyBots(myBots.map(b => (b.id === botId ? { ...b, knowledgeBaseText: data.bot.knowledgeBaseText } : b)));
+        setEditingBotId(null);
+        setEditKbText('');
+      } else {
+        alert(data.error || 'Failed to edit bot');
+      }
+    } catch (e) {
+      console.error('Failed to edit bot:', e);
+      alert('Failed to save changes.');
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const deleteBot = async (botId: string) => {
+    if (!walletAddress) return;
+    if (!confirm('Are you sure you want to delete this bot? This action cannot be undone.')) return;
+
+    try {
+      const res = await fetch('/api/bots/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ botId, ownerWallet: walletAddress }),
+      });
+      if (res.ok) {
+        setMyBots(myBots.filter(b => b.id !== botId));
+      } else {
+        const errorData = await res.json();
+        alert(errorData.error || 'Failed to delete bot');
+      }
+    } catch (e) {
+      console.error('Failed to delete bot:', e);
     }
   };
 
@@ -239,6 +310,38 @@ export default function Home() {
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
+                    Custom System Prompt (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="You are a friendly customer support agent..."
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
+                      ? 'border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600'
+                      : 'border-slate-200 bg-white/50 text-slate-900'
+                      }`}
+                    value={systemPrompt}
+                    onChange={(event) => setSystemPrompt(event.currentTarget.value)}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
+                    Welcome Message (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Hi! How can I help you today?"
+                    className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
+                      ? 'border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600'
+                      : 'border-slate-200 bg-white/50 text-slate-900'
+                      }`}
+                    value={welcomeMessage}
+                    onChange={(event) => setWelcomeMessage(event.currentTarget.value)}
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
                     Manual Knowledge Base
                   </label>
                   <textarea
@@ -296,7 +399,7 @@ export default function Home() {
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-semibold text-slate-500 ml-1 uppercase tracking-wider">
-                    Upload Documents (PDF, DOCX, TXT)
+                    Upload Documents (PDF, DOCX, TXT, CSV)
                   </label>
                   <div className="mt-1">
                     <label className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed py-6 transition-all hover:border-[#0088cc]/50 hover:bg-[#0088cc]/5 ${isDarkMode
@@ -305,12 +408,12 @@ export default function Home() {
                       }`}>
                       <Upload className="mb-2 h-6 w-6 text-slate-400" />
                       <p className={`text-xs font-medium ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>Click to upload</p>
-                      <p className="mt-0.5 text-xs text-slate-500">PDF, Word, or Text up to 10MB each</p>
+                      <p className="mt-0.5 text-xs text-slate-500">PDF, Word, Text, or CSV up to 10MB each</p>
                       <input
                         type="file"
                         className="hidden"
                         multiple
-                        accept=".pdf,.docx,.txt"
+                        accept=".pdf,.docx,.txt,.csv"
                         onChange={handleFileChange}
                       />
                     </label>
@@ -423,7 +526,7 @@ export default function Home() {
                           Created {new Date(bot.createdAt).toLocaleDateString()}
                         </p>
                       </div>
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-col items-end gap-2">
                         <div className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider ${bot.isActive
                           ? 'bg-emerald-500/10 text-emerald-500'
                           : 'bg-slate-500/10 text-slate-500'
@@ -431,6 +534,12 @@ export default function Home() {
                           <span className={`h-1.5 w-1.5 rounded-full ${bot.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-500'}`} />
                           {bot.isActive ? 'Active' : 'Paused'}
                         </div>
+                        <div className="flex gap-2 text-[10px] text-slate-500 font-mono text-right">
+                          <span>{bot.totalInteractions || 0} msgs</span>
+                          <span>&bull;</span>
+                          <span>{bot.totalUniqueUsers || 0} users</span>
+                        </div>
+                        <div className="flex gap-2">
                         <button
                           onClick={() => toggleBotStatus(bot.id, bot.isActive)}
                           className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${bot.isActive
@@ -440,10 +549,53 @@ export default function Home() {
                         >
                           {bot.isActive ? 'Pause' : 'Activate'}
                         </button>
+                        <button
+                          onClick={() => startEditingBot(bot)}
+                          className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-blue-100 text-blue-700 hover:bg-blue-200 transition-all"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => deleteBot(bot.id)}
+                          className="rounded-xl px-3 py-1.5 text-xs font-semibold bg-red-100 text-red-700 hover:bg-red-200 transition-all"
+                        >
+                          Delete
+                        </button>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="mt-4 space-y-3">
+                    {editingBotId === bot.id ? (
+                      <div className="mt-4 space-y-3">
+                        <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                          Edit Knowledge Base
+                        </label>
+                        <textarea
+                          rows={6}
+                          className={`w-full rounded-xl border px-3 py-2 text-xs outline-none focus:border-[#0088cc] ${isDarkMode ? 'border-slate-800 bg-slate-800/50 text-white' : 'border-slate-200 bg-white/50 text-slate-900'}`}
+                          value={editKbText}
+                          onChange={e => setEditKbText(e.target.value)}
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => saveBotEdits(bot.id)}
+                            isLoading={isSavingEdit}
+                            disabled={isSavingEdit || editKbText.trim().length < 10}
+                            className="flex-1 py-2 text-xs"
+                          >
+                            Save Changes
+                          </Button>
+                          <button
+                            onClick={cancelEditingBot}
+                            disabled={isSavingEdit}
+                            className={`rounded-xl px-4 py-2 text-xs font-semibold transition-all ${isDarkMode ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-4 space-y-3">
                       <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Recent Interactions</p>
                       {bot.interactions && bot.interactions.length > 0 ? (
                         <div className="space-y-2">
@@ -470,6 +622,7 @@ export default function Home() {
                         <p className="px-1 text-[11px] text-slate-500 italic">No interactions yet.</p>
                       )}
                     </div>
+                    )}
                   </div>
                 ))}
               </div>

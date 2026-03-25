@@ -38,6 +38,8 @@ export async function POST(request: Request) {
     const ownerWallet = formData.get('ownerWallet') as string;
     const manualText = formData.get('knowledgeBaseText') as string;
     const aiModel = formData.get('aiModel') as string || 'google/gemini-2.0-flash-001';
+    const systemPrompt = formData.get('systemPrompt') as string | null;
+    const welcomeMessage = formData.get('welcomeMessage') as string | null;
     const urlsJson = formData.get('urls') as string;
     const uploadedFiles = formData.getAll('files') as File[];
 
@@ -136,6 +138,8 @@ export async function POST(request: Request) {
         aiModel,
         isActive: true,
         secretToken,
+        systemPrompt,
+        welcomeMessage,
       },
       update: {
         ownerWallet,
@@ -143,6 +147,8 @@ export async function POST(request: Request) {
         aiModel,
         isActive: true,
         secretToken,
+        systemPrompt,
+        welcomeMessage,
       },
     });
 

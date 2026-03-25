@@ -71,7 +71,7 @@ async function sendTelegramMessage(
   });
 }
 
-async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPrompt: string) {
+async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPrompt: string, customSystemPrompt: string | null) {
   const apiKey = process.env.OPENROUTER_API_KEY;
 
   if (!apiKey) {
@@ -82,7 +82,7 @@ async function askOpenRouter(knowledgeBaseText: string, aiModel: string, userPro
   }
 
   const systemPrompt = [
-    'You are a strict Telegram support agent.',
+    customSystemPrompt || 'You are a strict Telegram support agent.',
     'Use ONLY the provided knowledge base to answer.',
     'If answer is not present in the KB, reply exactly: "I can only answer from the provided knowledge base."',
     'If user wants to buy/order/purchase/pay for something clearly listed in KB with a TON price, return intent object.',
@@ -166,8 +166,14 @@ export async function POST(
       return NextResponse.json({ ok: true });
     }
 
+    if (text === '/start' && bot.welcomeMessage) {
+      console.log(`[Webhook] Sending welcome message for bot: ${botToken.slice(0, 10)}...`);
+      await sendTelegramMessage(botToken, chatId, bot.welcomeMessage);
+      return NextResponse.json({ ok: true });
+    }
+
     console.log(`[Webhook] Asking AI (${bot.aiModel}) with prompt: "${text}"`);
-    const ai = await askOpenRouter(bot.knowledgeBaseText, bot.aiModel, text);
+    const ai = await askOpenRouter(bot.knowledgeBaseText, bot.aiModel, text, bot.systemPrompt);
     console.log('[Webhook] AI Result:', JSON.stringify(ai, null, 2));
 
     let buyUrl: string | undefined;
