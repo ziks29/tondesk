@@ -76,6 +76,8 @@ Never include markdown or extra text outside JSON.`;
   const [customTopUpAmount, setCustomTopUpAmount] = useState('3');
   const [walletStatus, setWalletStatus] = useState('');
   const [walletError, setWalletError] = useState('');
+  const showAdvancedSettings = false;
+  const setShowAdvancedSettings = () => {};
 
   const createAuthHeaders = (contentType?: string) => {
     const headers = new Headers();
@@ -553,6 +555,7 @@ Never include markdown or extra text outside JSON.`;
             <div className="flex flex-col gap-3">
               <div className="flex flex-wrap gap-2">
               {TOP_UP_AMOUNTS.map((amount) => (
+                {false && (
                 <button
                   key={amount}
                   type="button"
@@ -562,6 +565,7 @@ Never include markdown or extra text outside JSON.`;
                 >
                   {isTopUpPending === amount ? 'Waiting...' : `Top up ${amount} TON`}
                 </button>
+                )}
               ))}
               </div>
 
@@ -903,101 +907,6 @@ Never include markdown or extra text outside JSON.`;
                     ▼
                   </span>
                 </button>
-
-                {showAdvancedSettings && (
-                  <div className="space-y-4 rounded-xl border border-slate-200 dark:border-slate-800 p-4 bg-slate-50 dark:bg-slate-900/30">
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        System Prompt
-                      </label>
-                      <textarea
-                        placeholder={DEFAULT_SYSTEM_PROMPT}
-                        rows={5}
-                        className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
-                          ? 'border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600'
-                          : 'border-slate-200 bg-white/50 text-slate-900'
-                          }`}
-                        value={systemPrompt}
-                        onChange={(event) => setSystemPrompt(event.currentTarget.value)}
-                      />
-                      <p className="text-xs text-slate-500 ml-1">
-                        Leave empty to use default system prompt
-                      </p>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                        Welcome Message (Optional)
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Hi! How can I help you today?"
-                        className={`w-full rounded-2xl border px-4 py-3 text-sm outline-none transition-all focus:border-[#0088cc] focus:ring-4 focus:ring-[#0088cc]/10 ${isDarkMode
-                          ? 'border-slate-800 bg-slate-800/50 text-white placeholder:text-slate-600'
-                          : 'border-slate-200 bg-white/50 text-slate-900'
-                          }`}
-                        value={welcomeMessage}
-                        onChange={(event) => setWelcomeMessage(event.currentTarget.value)}
-                      />
-                    </div>
-
-                    <div className={`rounded-2xl border p-4 ${isDarkMode
-                      ? 'border-slate-800 bg-slate-800/30'
-                      : 'border-slate-200 bg-white/50'
-                      }`}>
-                      <p className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Crawl Settings</p>
-                      <div className="space-y-3">
-                        <div>
-                          <label className="text-xs font-medium text-slate-500">Max Crawl Depth (levels)</label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="5"
-                            value={crawlMaxDepth}
-                            onChange={(e) => setCrawlMaxDepth(Math.max(1, Math.min(5, parseInt(e.target.value) || 2)))}
-                            className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm transition-colors ${isDarkMode
-                              ? 'border-slate-700 bg-slate-900/50 text-white focus:border-[#0088cc] focus:outline-none'
-                              : 'border-slate-200 bg-white text-slate-900 focus:border-[#0088cc] focus:outline-none'
-                              }`}
-                          />
-                          <p className="text-xs text-slate-500 mt-1">How many levels deep to crawl (1-5, default: 2)</p>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-slate-500">Max Pages to Crawl</label>
-                          <input
-                            type="number"
-                            min="1"
-                            max="50"
-                            value={crawlMaxPages}
-                            onChange={(e) => setCrawlMaxPages(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
-                            className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm transition-colors ${isDarkMode
-                              ? 'border-slate-700 bg-slate-900/50 text-white focus:border-[#0088cc] focus:outline-none'
-                              : 'border-slate-200 bg-white text-slate-900 focus:border-[#0088cc] focus:outline-none'
-                              }`}
-                          />
-                          <p className="text-xs text-slate-500 mt-1">Maximum pages to crawl per URL (1-50, default: 10)</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className={`flex items-center justify-between rounded-2xl border p-4 ${isDarkMode
-                      ? 'border-slate-800 bg-slate-800/30'
-                      : 'border-slate-200 bg-white/50'
-                      }`}>
-                      <div>
-                        <p className={`text-sm font-semibold ${isDarkMode ? 'text-slate-200' : 'text-slate-700'}`}>Web Search</p>
-                        <p className="text-xs text-slate-500">Let the bot search the web to supplement its knowledge base</p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => setWebSearchEnabled(!webSearchEnabled)}
-                        className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${webSearchEnabled ? 'bg-[#0088cc]' : isDarkMode ? 'bg-slate-700' : 'bg-slate-200'}`}
-                      >
-                        <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${webSearchEnabled ? 'translate-x-5' : 'translate-x-0'}`} />
-                      </button>
-                    </div>
-                  </div>
-                )}
 
                 <Button
                   isLoading={isDeploying}
