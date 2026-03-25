@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
-import { validate } from '@tma.js/init-data-node';
+import { validateTmaAuth } from '@/lib/auth';
 
 import { extractFromFile, extractFromUrl } from '@/lib/extractor';
 import { prisma } from '@/lib/prisma';
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
     }
 
     try {
-      validate(authData, platformBotToken);
+      validateTmaAuth(authData, platformBotToken);
     } catch (e) {
       return NextResponse.json({ error: 'Unauthorized: invalid initData' }, { status: 401 });
     }
