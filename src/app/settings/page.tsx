@@ -31,21 +31,23 @@ export default function SettingsPage() {
 
   return (
     <Page back={false}>
-      <main className="mx-auto min-h-screen w-full max-w-2xl px-4 py-6 sm:px-8 sm:py-10">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-8 md:px-8 md:py-16 lg:py-24">
+        <div className="mb-10 flex items-center justify-between px-1">
           <Link
             href="/"
-            className="flex items-center gap-1 text-sm font-medium text-slate-500 hover:text-[#0088cc] transition-colors"
+            className="group flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-[#0088cc] transition-all"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <div className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'bg-slate-800 group-hover:bg-[#0088cc]/20' : 'bg-slate-100 group-hover:bg-[#0088cc]/10'}`}>
+              <ChevronLeft className="h-4 w-4" />
+            </div>
             Back to Deploy
           </Link>
-          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Settings</h1>
+          <h1 className={`text-2xl font-extrabold tracking-tight sm:text-3xl ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>Settings</h1>
         </div>
 
-        <section className={`rounded-3xl border p-6 shadow-xl backdrop-blur-xl sm:p-8 ${isDarkMode
-            ? 'border-white/10 bg-slate-900/50 shadow-black/20'
-            : 'border-white/40 bg-white/90 shadow-slate-200/40'
+        <section className={`rounded-[2.5rem] border p-8 shadow-2xl backdrop-blur-2xl sm:p-12 ${isDarkMode
+            ? 'border-white/10 bg-slate-900/60 shadow-black/40'
+            : 'border-white/60 bg-white/80 shadow-slate-200/40'
           }`}>
           <div className="space-y-8">
             <div className="space-y-4">

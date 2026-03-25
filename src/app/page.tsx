@@ -250,26 +250,32 @@ export default function Home() {
 
   return (
     <Page back={false}>
-      <main className="mx-auto min-h-screen w-full max-w-4xl px-4 py-6 sm:px-8 sm:py-10">
-        <div className="mb-8 space-y-4 px-1">
-          <div className="flex items-center justify-between">
-            <p className={`text-3xl font-bold sm:text-4xl ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
+        <div className={`absolute -top-[10%] -left-[10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20 ${isDarkMode ? 'bg-[#0088cc]' : 'bg-[#0088cc]/30'}`} />
+        <div className={`absolute -bottom-[10%] -right-[10%] w-[40%] h-[40%] rounded-full blur-[120px] opacity-20 ${isDarkMode ? 'bg-purple-600' : 'bg-purple-600/20'}`} />
+      </div>
+      <main className="mx-auto min-h-screen w-full max-w-7xl px-4 py-8 md:px-8 md:py-16 lg:px-12 lg:py-24 relative">
+        <div className="mb-12 space-y-6 px-1 lg:mb-20">
+          <div className="flex flex-col items-center justify-between gap-6 sm:flex-row">
+            <p className={`text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl ${isDarkMode ? 'text-white' : 'text-slate-900'}`}>
               TonDesk
             </p>
-            <TonConnectButton />
+            <div className="scale-110">
+              <TonConnectButton />
+            </div>
           </div>
-          <div className="space-y-4">
-            <p className={`max-w-xl text-sm sm:text-base ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
+          <div className="space-y-6 text-center sm:text-left">
+            <p className={`max-w-2xl text-base font-medium sm:text-lg lg:text-xl ${isDarkMode ? 'text-slate-400' : 'text-slate-600'}`}>
               Deploy RAG-powered Telegram bots from your knowledge base in minutes.
             </p>
             {tgUser && (
-              <div className="flex flex-col gap-0.5">
-                <p className="text-xs font-medium text-slate-500">
-                  Logged in as @{tgUser.username ?? 'telegram-user'}
+              <div className="flex flex-col gap-1 sm:items-start">
+                <p className="text-sm font-semibold text-slate-500">
+                  Logged in as <span className={isDarkMode ? 'text-slate-300' : 'text-slate-700'}>@{tgUser.username ?? 'telegram-user'}</span>
                 </p>
                 {walletAddress && (
-                  <p className="text-[10px] text-slate-400 font-mono">
-                    {walletAddress.slice(0, 6)}...{walletAddress.slice(-6)}
+                  <p className="text-xs text-slate-400 font-mono bg-slate-500/5 px-2 py-1 rounded-md inline-block w-fit">
+                    {walletAddress.slice(0, 8)}...{walletAddress.slice(-8)}
                   </p>
                 )}
               </div>
@@ -277,10 +283,10 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
-          <section className={`rounded-3xl border p-6 shadow-2xl backdrop-blur-xl sm:p-8 transition-all h-fit ${isDarkMode
-            ? 'border-white/10 bg-slate-900/65 shadow-black/40'
-            : 'border-white/40 bg-white/65 shadow-[0_20px_80px_-40px_rgba(0,112,180,0.8)]'
+        <div className="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16 xl:gap-24">
+          <section className={`col-span-1 lg:col-span-6 rounded-[2.5rem] border p-8 shadow-2xl backdrop-blur-2xl sm:p-10 transition-all h-fit ${isDarkMode
+            ? 'border-white/10 bg-slate-900/70 shadow-black/60'
+            : 'border-white/60 bg-white/80 shadow-[0_32px_120px_-40px_rgba(0,136,204,0.35)]'
             }`}>
           <div className="space-y-6">
             <div className="space-y-4">
@@ -492,7 +498,7 @@ export default function Home() {
           </div>
           </section>
 
-          <section className="space-y-6">
+          <section className="col-span-1 lg:col-span-6 space-y-8">
             <div className="flex items-baseline justify-between px-1">
               <h2 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-slate-800'}`}>My Bots</h2>
               <button onClick={fetchMyBots} className="text-xs text-[#0088cc] hover:underline">Refresh</button>
