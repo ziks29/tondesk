@@ -156,6 +156,7 @@ docker compose up --build
 The container will:
 
 - install dependencies with `pnpm`
+- allow and build the native `better-sqlite3` binding needed by Prisma's SQLite adapter
 - generate the Prisma client
 - build the Next.js app
 - run `prisma migrate deploy` on startup
