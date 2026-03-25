@@ -14,20 +14,38 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('system');
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('tondesk_theme') as Theme;
+      if (saved) return saved;
+    }
+    return 'system';
+  });
   const tmaIsDark = useSignal(miniApp.isDark);
 
-  useEffect(() => {
-    const saved = localStorage.getItem('tondesk_theme') as Theme;
-    if (saved) setThemeState(saved);
-  }, []);
+  const isDarkMode = theme === 'system' ? !!tmaIsDark : theme === 'dark';
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem('tondesk_theme', newTheme);
+
+    // Apply class immediately for instant feedback
+    const applyDark = newTheme === 'system' ? !!tmaIsDark : newTheme === 'dark';
+    if (applyDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
-  const isDarkMode = theme === 'system' ? !!tmaIsDark : theme === 'dark';
+  // Keep it in sync if system theme changes or provider initializes with dark
+  useEffect(() => {
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, isDarkMode }}>
