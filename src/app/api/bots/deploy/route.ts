@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 
+import { validateTmaAuth } from '@/lib/auth';
+
 import { extractFromFile, extractFromUrl } from '@/lib/extractor';
 import { prisma } from '@/lib/prisma';
 
@@ -11,11 +13,33 @@ function telegramApiUrl(botToken: string, method: string) {
 
 export async function POST(request: Request) {
   try {
+    const requestHeaders = await headers();
+    const authHeader = requestHeaders.get('authorization');
+    const [authType, authData = ''] = (authHeader || '').split(' ');
+
+    if (authType !== 'tma' || !authData) {
+      return NextResponse.json({ error: 'Unauthorized: missing or invalid tma auth header' }, { status: 401 });
+    }
+
+    const platformBotToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!platformBotToken) {
+      console.error('TELEGRAM_BOT_TOKEN is not set');
+      return NextResponse.json({ error: 'Server misconfiguration' }, { status: 500 });
+    }
+
+    try {
+      validateTmaAuth(authData, platformBotToken);
+    } catch (e) {
+      return NextResponse.json({ error: 'Unauthorized: invalid initData' }, { status: 401 });
+    }
+
     const formData = await request.formData();
     const botToken = formData.get('botToken') as string;
     const ownerWallet = formData.get('ownerWallet') as string;
     const manualText = formData.get('knowledgeBaseText') as string;
     const aiModel = formData.get('aiModel') as string || 'google/gemini-2.0-flash-001';
+    const systemPrompt = formData.get('systemPrompt') as string | null;
+    const welcomeMessage = formData.get('welcomeMessage') as string | null;
     const urlsJson = formData.get('urls') as string;
     const uploadedFiles = formData.getAll('files') as File[];
 
@@ -76,7 +100,6 @@ export async function POST(request: Request) {
       );
     }
 
-    const requestHeaders = await headers();
     const host = requestHeaders.get('x-forwarded-host') || requestHeaders.get('host') || '';
     const protocol = requestHeaders.get('x-forwarded-proto') || 'https';
 
@@ -126,6 +149,8 @@ export async function POST(request: Request) {
         aiModel,
         isActive: true,
         secretToken,
+        systemPrompt,
+        welcomeMessage,
       },
       update: {
         ownerWallet,
@@ -133,6 +158,8 @@ export async function POST(request: Request) {
         aiModel,
         isActive: true,
         secretToken,
+        systemPrompt,
+        welcomeMessage,
       },
     });
 
