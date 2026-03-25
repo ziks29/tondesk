@@ -51,12 +51,16 @@ export async function POST(request: Request) {
     let extractedText = manualText || '';
     
     // Parse and handle URLs
+    const urlPromises: Promise<void>[] = [];
     if (urlsJson) {
       try {
         const urls = JSON.parse(urlsJson) as string[];
         for (const url of urls) {
-          const content = await extractFromUrl(url);
-          if (content) extractedText += `\n\n[Content from URL: ${url}]\n${content}`;
+          urlPromises.push(
+            extractFromUrl(url).then(content => {
+              if (content) extractedText += `\n\n[Content from URL: ${url}]\n${content}`;
+            })
+          );
         }
       } catch (e) {
         console.error('Error parsing URLs JSON:', e);
@@ -64,10 +68,17 @@ export async function POST(request: Request) {
     }
 
     // Handle Files
+    const filePromises: Promise<void>[] = [];
     for (const file of uploadedFiles) {
-      const content = await extractFromFile(file);
-      if (content) extractedText += `\n\n[Content from File: ${file.name}]\n${content}`;
+      filePromises.push(
+        extractFromFile(file).then(content => {
+          if (content) extractedText += `\n\n[Content from File: ${file.name}]\n${content}`;
+        })
+      );
     }
+
+    // Process URLs and files concurrently to optimize performance
+    await Promise.all([...urlPromises, ...filePromises]);
 
     if (extractedText.trim().length < 10) {
       return NextResponse.json(
