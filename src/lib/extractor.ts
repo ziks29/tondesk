@@ -2,12 +2,79 @@ import * as cheerio from 'cheerio';
 import mammoth from 'mammoth';
 import { PDFParse } from 'pdf-parse';
 
-export async function extractFromUrl(url: string): Promise<string> {
+function normalizeUrl(urlStr: string): string {
   try {
-    const response = await fetch(url);
+    const url = new URL(urlStr);
+    url.hash = ''; // Remove fragment
+    let href = url.href;
+    if (href.endsWith('/')) {
+      href = href.slice(0, -1);
+    }
+    return href;
+  } catch {
+    return urlStr;
+  }
+}
+
+export async function extractFromUrl(
+  startUrl: string,
+  maxDepth: number = 2,
+  globalState?: { visited: Set<string>; pageCount: number; maxPages: number }
+): Promise<string> {
+  const state = globalState || {
+    visited: new Set<string>(),
+    pageCount: 0,
+    maxPages: 10,
+  };
+
+  const normalizedStartUrl = normalizeUrl(startUrl);
+
+  // If we already visited or reached max pages, abort
+  if (state.visited.has(normalizedStartUrl) || state.pageCount >= state.maxPages) {
+    return '';
+  }
+
+  state.visited.add(normalizedStartUrl);
+  state.pageCount++;
+
+  try {
+    const response = await fetch(normalizedStartUrl);
     if (!response.ok) return '';
     const html = await response.text();
     const $ = cheerio.load(html);
+
+    // Find links before we remove nav/header etc.
+    const linksToFollow: string[] = [];
+    if (maxDepth > 0 && state.pageCount < state.maxPages) {
+      let baseDomain = '';
+      try {
+        baseDomain = new URL(normalizedStartUrl).hostname;
+      } catch (e) {
+        // ignore invalid URL
+      }
+
+      if (baseDomain) {
+        $('a[href]').each((_, el) => {
+          const href = $(el).attr('href');
+          if (!href) return;
+
+          try {
+            // resolve relative URLs
+            const resolvedUrl = new URL(href, normalizedStartUrl);
+
+            // Only follow HTTP(S) and same domain
+            if (
+              (resolvedUrl.protocol === 'http:' || resolvedUrl.protocol === 'https:') &&
+              resolvedUrl.hostname === baseDomain
+            ) {
+              linksToFollow.push(resolvedUrl.href);
+            }
+          } catch (e) {
+            // Ignore invalid URLs
+          }
+        });
+      }
+    }
 
     // Remove scripts, styles, and common nav/footer elements to get clean text
     $('script, style, nav, footer, header, noscript').remove();
@@ -16,9 +83,25 @@ export async function extractFromUrl(url: string): Promise<string> {
     const contentArea = $('main, article, #content, .content, #main, .main').first();
     const text = contentArea.length > 0 ? contentArea.text() : $('body').text();
 
-    return text.replace(/\s+/g, ' ').trim();
+    let extractedText = `\n\n--- Source: ${normalizedStartUrl} ---\n`;
+    extractedText += text.replace(/\s+/g, ' ').trim();
+
+    // Deduplicate links to follow
+    const uniqueLinks = Array.from(new Set(linksToFollow.map(normalizeUrl)));
+
+    // Recursively extract from links (sequentially to strictly respect maxPages, or concurrently if we manually handle limits)
+    // We do it sequentially here to accurately respect `state.pageCount < state.maxPages`
+    for (const link of uniqueLinks) {
+      if (state.pageCount >= state.maxPages) break;
+      const childText = await extractFromUrl(link, maxDepth - 1, state);
+      if (childText) {
+        extractedText += childText;
+      }
+    }
+
+    return extractedText;
   } catch (error) {
-    console.error(`Error extracting from URL ${url}:`, error);
+    console.error(`Error extracting from URL ${normalizedStartUrl}:`, error);
     return '';
   }
 }
