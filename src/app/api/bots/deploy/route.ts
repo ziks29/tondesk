@@ -51,16 +51,20 @@ export async function POST(request: Request) {
     let extractedText = manualText || '';
     
     // Parse and handle URLs
-    const urlPromises: Promise<void>[] = [];
+    const globalState = {
+      visited: new Set<string>(),
+      pageCount: 0,
+      maxPages: 10,
+    };
+
     if (urlsJson) {
       try {
         const urls = JSON.parse(urlsJson) as string[];
         for (const url of urls) {
-          urlPromises.push(
-            extractFromUrl(url).then(content => {
-              if (content) extractedText += `\n\n[Content from URL: ${url}]\n${content}`;
-            })
-          );
+          if (globalState.pageCount >= globalState.maxPages) break;
+          // Process sequentially to respect global limits strictly
+          const content = await extractFromUrl(url, 2, globalState);
+          if (content) extractedText += `\n\n[Crawl Results for: ${url}]${content}`;
         }
       } catch (e) {
         console.error('Error parsing URLs JSON:', e);
@@ -77,8 +81,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Process URLs and files concurrently to optimize performance
-    await Promise.all([...urlPromises, ...filePromises]);
+    // Process files concurrently
+    await Promise.all(filePromises);
 
     if (extractedText.trim().length < 10) {
       return NextResponse.json(
