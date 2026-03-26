@@ -230,7 +230,7 @@ export default function Home() {
       const res = await fetch("/api/bots/toggle", {
         method: "POST",
         headers: createAuthHeaders("application/json"),
-        body: JSON.stringify({ botId, isActive: !currentStatus }),
+        body: JSON.stringify({ botId, ownerWallet: walletAddress, isActive: !currentStatus }),
       });
       if (res.ok) {
         setMyBots((currentBots) =>

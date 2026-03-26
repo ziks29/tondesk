@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+
 import { prisma } from '@/lib/prisma';
 import { requireTelegramAuth } from '@/lib/server-auth';
+
+function telegramApiUrl(botToken: string, method: string) {
+  return `https://api.telegram.org/bot${botToken}/${method}`;
+}
 
 export async function POST(request: Request) {
   try {
@@ -21,6 +26,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized to delete this bot' }, { status: 403 });
     }
 
+    // Remove webhook from Telegram before deleting so Telegram stops calling the dead URL
+    try {
+      await fetch(telegramApiUrl(existingBot.botToken, 'deleteWebhook'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ drop_pending_updates: true }),
+      });
+    } catch (err) {
+      // Non-fatal: bot token may already be invalid; proceed with local deletion
+      console.warn('deleteWebhook failed (non-fatal):', err);
+    }
+
     // Delete related interactions first to avoid foreign key constraints
     await prisma.interaction.deleteMany({
       where: { botId: botId },
@@ -33,6 +50,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, bot });
   } catch (error) {
     console.error('Delete bot error:', error);
-    return NextResponse.json({ error: 'Failed to delete bot' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Failed to delete bot';
+    const status = message.startsWith('Unauthorized') ? 401 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }

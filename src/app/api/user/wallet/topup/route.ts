@@ -18,6 +18,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid top-up amount' }, { status: 400 });
     }
 
+    if (amountTon > 10_000) {
+      return NextResponse.json({ error: 'Top-up amount exceeds maximum allowed (10,000 TON)' }, { status: 400 });
+    }
+
     const normalizedAmount = Number(amountTon.toFixed(4));
     const credits = tonToCredits(normalizedAmount);
 

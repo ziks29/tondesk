@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { INTERACTION_CREDIT_COST } from "@/lib/billing";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 type OpenRouterResult = {
   reply: string;
@@ -95,9 +96,13 @@ async function askOpenRouter(
     `KNOWLEDGE_BASE:\n${knowledgeBaseText}`,
   ].join("\n");
 
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20_000);
+
+  let response: Response;
+  try {
+    response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      signal: controller.signal,
       method: "POST",
       headers: {
         Authorization: `Bearer ${apiKey}`,
@@ -114,8 +119,15 @@ async function askOpenRouter(
           { role: "user", content: userPrompt },
         ],
       }),
-    },
-  );
+    });
+  } catch (err) {
+    clearTimeout(timeoutId);
+    if ((err as Error).name === "AbortError") {
+      return { reply: "I can only answer from the provided knowledge base.", intent: null };
+    }
+    throw err;
+  }
+  clearTimeout(timeoutId);
 
   if (!response.ok) {
     const raw = await response.text();
@@ -168,9 +180,15 @@ export async function POST(
 
     const update = (await request.json()) as TelegramUpdate;
     const chatId = update.message?.chat?.id;
-    const text = update.message?.text?.trim();
+    const text = update.message?.text?.trim()?.slice(0, 4096);
 
     if (!chatId || !text) {
+      return NextResponse.json({ ok: true });
+    }
+
+    // Rate limit: 30 messages per minute per bot+chat
+    if (!checkRateLimit(`webhook:${botToken}:${chatId}`, 30, 60_000)) {
+      await sendTelegramMessage(botToken, chatId, "Too many messages. Please wait a moment.");
       return NextResponse.json({ ok: true });
     }
 

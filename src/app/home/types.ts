@@ -19,6 +19,7 @@ export type BotRecord = {
   id: string;
   botUsername?: string | null;
   botToken: string;
+  ownerWallet: string;
   createdAt: string;
   isActive: boolean;
   totalInteractions?: number | null;

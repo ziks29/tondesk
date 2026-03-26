@@ -287,7 +287,7 @@ function BotCard({
               Edit
             </button>
             <a
-              href={`/interactions?botId=${bot.id}`}
+              href={`/interactions?botId=${bot.id}&ownerWallet=${encodeURIComponent(bot.ownerWallet)}`}
               className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${isDarkMode ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
             >
               Interactions

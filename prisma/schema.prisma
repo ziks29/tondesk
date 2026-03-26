@@ -37,6 +37,9 @@ model Bot {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   interactions      Interaction[]
+
+  @@index([ownerWallet])
+  @@index([userWalletAddress])
 }
 
 model Interaction {
@@ -49,6 +52,8 @@ model Interaction {
   aiIntent    String?  // Store as JSON string
   creditsUsed Float    @default(0.1) // Credits deducted for this interaction
   createdAt   DateTime @default(now())
+
+  @@index([botId, chatId])
 }
 
 model Transaction {

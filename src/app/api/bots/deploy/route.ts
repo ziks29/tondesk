@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 
 import { extractFromFile, extractFromUrl } from "@/lib/extractor";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { requireTelegramAuth } from "@/lib/server-auth";
 
 function telegramApiUrl(botToken: string, method: string) {
@@ -13,6 +14,15 @@ export async function POST(request: Request) {
   try {
     const { requestHeaders } = await requireTelegramAuth();
 
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    if (!checkRateLimit(`deploy:${ip}`, 5, 15 * 60_000)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        { status: 429 },
+      );
+    }
+
     const formData = await request.formData();
     const botToken = formData.get("botToken") as string;
     const ownerWallet = formData.get("ownerWallet") as string;
@@ -22,12 +32,16 @@ export async function POST(request: Request) {
     const systemPrompt = formData.get("systemPrompt") as string | null;
     const welcomeMessage = formData.get("welcomeMessage") as string | null;
     const webSearchEnabled = formData.get("webSearchEnabled") === "true";
-    const crawlMaxDepth =
-      parseInt(formData.get("crawlMaxDepth") as string) || 2;
-    const crawlMaxPages =
-      parseInt(formData.get("crawlMaxPages") as string) || 10;
+    const crawlMaxDepth = Math.min(
+      Math.max(parseInt(formData.get("crawlMaxDepth") as string) || 2, 1),
+      5,
+    );
+    const crawlMaxPages = Math.min(
+      Math.max(parseInt(formData.get("crawlMaxPages") as string) || 10, 1),
+      50,
+    );
     const urlsJson = formData.get("urls") as string;
-    const uploadedFiles = formData.getAll("files") as File[];
+    const uploadedFiles = (formData.getAll("files") as File[]).slice(0, 5);
 
     if (!botToken || !ownerWallet) {
       return NextResponse.json(
@@ -97,6 +111,12 @@ export async function POST(request: Request) {
         { error: "Knowledge base is empty or too small." },
         { status: 400 },
       );
+    }
+
+    // Cap to ~125k tokens to prevent runaway OpenRouter costs
+    const MAX_KB_CHARS = 500_000;
+    if (extractedText.length > MAX_KB_CHARS) {
+      extractedText = extractedText.slice(0, MAX_KB_CHARS);
     }
 
     const getMeResponse = await fetch(telegramApiUrl(botToken, "getMe"));

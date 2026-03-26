@@ -29,6 +29,7 @@ export default function InteractionsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const botId = searchParams.get('botId');
+  const ownerWallet = searchParams.get('ownerWallet');
   const initDataRaw = useRawInitData();
   const { isDarkMode } = useTheme();
 
@@ -38,14 +39,14 @@ export default function InteractionsPage() {
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!botId) {
-      setError('Bot ID not provided');
+    if (!botId || !ownerWallet) {
+      setError('Bot ID or owner wallet not provided');
       setIsLoading(false);
       return;
     }
 
     fetchInteractions();
-  }, [botId]);
+  }, [botId, ownerWallet]);
 
   const fetchInteractions = async () => {
     try {
@@ -55,7 +56,10 @@ export default function InteractionsPage() {
         headers.set('Authorization', `tma ${initDataRaw}`);
       }
 
-      const res = await fetch(`/api/interactions?botId=${botId}`, { headers });
+      const res = await fetch(
+        `/api/interactions?botId=${botId}&ownerWallet=${encodeURIComponent(ownerWallet ?? '')}`,
+        { headers },
+      );
       if (res.ok) {
         const data = await res.json();
         setChatGroups(data.chatGroups || []);

@@ -15,10 +15,16 @@ export async function POST(request: Request) {
     const systemPrompt = formData.get('systemPrompt') as string | null;
     const welcomeMessage = formData.get('welcomeMessage') as string | null;
     const webSearchEnabled = formData.get('webSearchEnabled') === 'true';
-    const crawlMaxDepth = parseInt(formData.get('crawlMaxDepth') as string) || 2;
-    const crawlMaxPages = parseInt(formData.get('crawlMaxPages') as string) || 10;
+    const crawlMaxDepth = Math.min(
+      Math.max(parseInt(formData.get('crawlMaxDepth') as string) || 2, 1),
+      5,
+    );
+    const crawlMaxPages = Math.min(
+      Math.max(parseInt(formData.get('crawlMaxPages') as string) || 10, 1),
+      50,
+    );
     const urlsJson = formData.get('urls') as string;
-    const uploadedFiles = formData.getAll('files') as File[];
+    const uploadedFiles = (formData.getAll('files') as File[]).slice(0, 5);
 
     if (!botId || !ownerWallet) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -84,6 +90,12 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Knowledge base is empty or too small.' }, { status: 400 });
     }
 
+    // Cap to ~125k tokens to prevent runaway OpenRouter costs
+    const MAX_KB_CHARS = 500_000;
+    if (extractedText.length > MAX_KB_CHARS) {
+      extractedText = extractedText.slice(0, MAX_KB_CHARS);
+    }
+
     const bot = await prisma.bot.update({
       where: { id: botId },
       data: {
@@ -101,6 +113,8 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, bot });
   } catch (error) {
     console.error('Edit bot error:', error);
-    return NextResponse.json({ error: 'Failed to edit bot' }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Failed to edit bot';
+    const status = message.startsWith('Unauthorized') ? 401 : 500;
+    return NextResponse.json({ error: message }, { status });
   }
 }
