@@ -82,20 +82,34 @@ function isSuccessfulTransaction(transaction: TonCenterTransaction | null) {
     return false;
   }
 
-  if (transaction.description?.aborted) {
-    return false;
-  }
-
+  // Check action phase (determines if transaction succeeded)
+  // Even if aborted=true, if action.success=true, the value transfer succeeded
   const action = transaction.description?.action;
-  if (action && (action.success === false || action.valid === false || action.no_funds === true)) {
-    return false;
+  if (action) {
+    // Explicit failure conditions
+    if (action.success === false || action.valid === false || action.no_funds === true) {
+      return false;
+    }
+    // If action.success is explicitly true, transaction succeeded
+    if (action.success === true) {
+      return true;
+    }
   }
 
+  // Check compute phase for execution errors
   const compute = transaction.description?.compute_ph;
-  if (compute && (compute.success === false || compute.exit_code && compute.exit_code !== 0)) {
-    return false;
+  if (compute) {
+    if (compute.success === false) {
+      return false;
+    }
+    // Non-zero exit code (except for certain acceptable codes) = failure
+    if (compute.exit_code && compute.exit_code !== 0) {
+      return false;
+    }
   }
 
+  // If no explicit success/failure indicators, consider it successful
+  // (aborted flag alone doesn't mean the transaction failed)
   return true;
 }
 
