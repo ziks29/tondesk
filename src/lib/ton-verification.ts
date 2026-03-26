@@ -105,12 +105,20 @@ export async function verifyPendingTopup(transactionId: string, masterWalletAddr
   });
 
   if (!pending || pending.type !== 'topup') {
+    console.error(`[ton-verification] Transaction not found: ${transactionId}`);
     throw new Error('Top-up not found');
   }
 
   if (pending.status === 'completed') {
+    console.log(`[ton-verification] Transaction already completed: ${transactionId}`);
     return { status: 'completed' as const, transaction: pending };
   }
+
+  console.log(
+    `[ton-verification] Verifying pending topup: ${transactionId}, ` +
+    `wallet=${pending.walletAddress.slice(0, 10)}..., ` +
+    `amount=${pending.amount} TON, age=${Math.round((Date.now() - pending.createdAt.getTime()) / 1000)}s`
+  );
 
   const inboundMessage = await findMatchingInboundMessage(
     pending.walletAddress,
@@ -120,8 +128,11 @@ export async function verifyPendingTopup(transactionId: string, masterWalletAddr
   );
 
   if (!inboundMessage?.in_msg_tx_hash) {
+    console.log(`[ton-verification] No inbound message found yet for transaction ${transactionId}`);
     return { status: 'pending' as const };
   }
+
+  console.log(`[ton-verification] Found inbound message for ${transactionId}, hash=${inboundMessage.in_msg_tx_hash}`);
 
   const existingVerified = await prisma.transaction.findFirst({
     where: {
@@ -132,6 +143,10 @@ export async function verifyPendingTopup(transactionId: string, masterWalletAddr
   });
 
   if (existingVerified) {
+    console.warn(
+      `[ton-verification] Double-spend detected! Transaction ${transactionId} attempted to use ` +
+      `already-verified hash ${inboundMessage.in_msg_tx_hash} (previous tx: ${existingVerified.id})`
+    );
     await prisma.transaction.update({
       where: { id: pending.id },
       data: {
@@ -142,9 +157,29 @@ export async function verifyPendingTopup(transactionId: string, masterWalletAddr
   }
 
   const onchainTransaction = await fetchTransactionByHash(inboundMessage.in_msg_tx_hash);
-  if (!isSuccessfulTransaction(onchainTransaction)) {
+
+  if (!onchainTransaction) {
+    console.log(`[ton-verification] On-chain transaction ${inboundMessage.in_msg_tx_hash} not found yet (may be emulated)`);
     return { status: 'pending' as const };
   }
+
+  if (!isSuccessfulTransaction(onchainTransaction)) {
+    console.warn(
+      `[ton-verification] On-chain transaction failed for ${transactionId}. ` +
+      `Hash=${inboundMessage.in_msg_tx_hash}, ` +
+      `emulated=${onchainTransaction.emulated}, ` +
+      `aborted=${onchainTransaction.description?.aborted}`
+    );
+    await prisma.transaction.update({
+      where: { id: pending.id },
+      data: {
+        status: 'failed',
+      },
+    });
+    return { status: 'failed' as const, error: 'Transaction failed on blockchain. Please check your wallet and try again.' };
+  }
+
+  console.log(`[ton-verification] Transaction successful! Crediting user for ${transactionId}`);
 
   const [user, verifiedTransaction] = await prisma.$transaction([
     prisma.user.upsert({
@@ -168,6 +203,8 @@ export async function verifyPendingTopup(transactionId: string, masterWalletAddr
       },
     }),
   ]);
+
+  console.log(`[ton-verification] Completed! User now has ${user.credits} credits`);
 
   return {
     status: 'completed' as const,

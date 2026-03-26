@@ -15,14 +15,30 @@ export async function POST(request: Request) {
     }
 
     if (!masterWalletAddress) {
-      return NextResponse.json({ error: 'NEXT_PUBLIC_MASTER_WALLET_ADDRESS is not configured.' }, { status: 500 });
+      console.error('[topup/confirm] NEXT_PUBLIC_MASTER_WALLET_ADDRESS not configured');
+      return NextResponse.json({ error: 'Server configuration error. Please contact support.' }, { status: 500 });
     }
 
     const result = await verifyPendingTopup(transactionId, masterWalletAddress);
     return NextResponse.json({ ok: true, ...result });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to verify top-up';
-    const status = message.startsWith('Unauthorized') ? 401 : 500;
-    return NextResponse.json({ error: message }, { status });
+    console.error(`[topup/confirm] Verification error for transaction:`, message);
+
+    // Distinguish between different error types for better UX
+    let status = 500;
+    let userMessage = 'Top-up verification failed. Please try again.';
+
+    if (message.startsWith('Unauthorized')) {
+      status = 401;
+      userMessage = 'Authentication failed. Please refresh and try again.';
+    } else if (message.includes('not found')) {
+      status = 400;
+      userMessage = 'Top-up not found. Please check if it was already processed.';
+    } else if (message.includes('Failed')) {
+      userMessage = message;
+    }
+
+    return NextResponse.json({ error: userMessage }, { status });
   }
 }

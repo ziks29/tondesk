@@ -1,8 +1,7 @@
 "use client";
 
-import { ChangeEvent } from "react";
-import { Loader2, X } from "lucide-react";
-import Link from "next/link";
+import { ChangeEvent, useState } from "react";
+import { ChevronDown, X } from "lucide-react";
 
 import { Button } from "@/components/ui/Button";
 
@@ -16,12 +15,14 @@ type BotsSectionProps = {
   editingBotId: string | null;
   editForm: EditFormState;
   isSavingEdit: boolean;
+  editError: string;
   onRefresh: () => void;
   onToggleBotStatus: (botId: string, currentStatus: boolean) => void;
   onStartEditingBot: (bot: BotRecord) => void;
   onDeleteBot: (botId: string) => void;
   onCancelEditingBot: () => void;
   onSaveBotEdits: (botId: string) => void;
+  onClearEditError: () => void;
   onEditAiModelChange: (value: string) => void;
   onEditSystemPromptChange: (value: string) => void;
   onEditWelcomeMessageChange: (value: string) => void;
@@ -43,12 +44,14 @@ export function BotsSection({
   editingBotId,
   editForm,
   isSavingEdit,
+  editError,
   onRefresh,
   onToggleBotStatus,
   onStartEditingBot,
   onDeleteBot,
   onCancelEditingBot,
   onSaveBotEdits,
+  onClearEditError,
   onEditAiModelChange,
   onEditSystemPromptChange,
   onEditWelcomeMessageChange,
@@ -79,8 +82,10 @@ export function BotsSection({
       </div>
 
       {isLoadingBots ? (
-        <div className="flex items-center justify-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-slate-400" />
+        <div className="space-y-3 sm:space-y-4">
+          {[1, 2, 3].map((i) => (
+            <BotCardSkeleton key={i} isDarkMode={isDarkMode} />
+          ))}
         </div>
       ) : bots.length === 0 ? (
         <div
@@ -105,11 +110,13 @@ export function BotsSection({
               isEditing={editingBotId === bot.id}
               editForm={editForm}
               isSavingEdit={isSavingEdit}
+              editError={editError}
               onToggleBotStatus={onToggleBotStatus}
               onStartEditingBot={onStartEditingBot}
               onDeleteBot={onDeleteBot}
               onCancelEditingBot={onCancelEditingBot}
               onSaveBotEdits={onSaveBotEdits}
+              onClearEditError={onClearEditError}
               onEditAiModelChange={onEditAiModelChange}
               onEditSystemPromptChange={onEditSystemPromptChange}
               onEditWelcomeMessageChange={onEditWelcomeMessageChange}
@@ -130,17 +137,53 @@ export function BotsSection({
   );
 }
 
+function BotCardSkeleton({ isDarkMode }: { isDarkMode: boolean }) {
+  return (
+    <div
+      className={`animate-pulse rounded-2xl sm:rounded-[2.5rem] border p-4 sm:p-5 md:p-6 ${
+        isDarkMode ? "border-white/5 bg-slate-900/80" : "border-slate-100 bg-white"
+      }`}
+    >
+      <div className="flex flex-col gap-3 lg:flex-row lg:justify-between">
+        <div className="space-y-2">
+          <div
+            className={`h-4 w-36 rounded-lg ${isDarkMode ? "bg-slate-800" : "bg-slate-200"}`}
+          />
+          <div
+            className={`h-3 w-24 rounded-lg ${isDarkMode ? "bg-slate-800" : "bg-slate-200"}`}
+          />
+        </div>
+        <div className="flex flex-col gap-2 lg:items-end">
+          <div
+            className={`h-5 w-16 rounded-full ${isDarkMode ? "bg-slate-800" : "bg-slate-200"}`}
+          />
+          <div className="flex gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className={`h-6 w-14 rounded-xl ${isDarkMode ? "bg-slate-800" : "bg-slate-200"}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 type BotCardProps = {
   isDarkMode: boolean;
   bot: BotRecord;
   isEditing: boolean;
   editForm: EditFormState;
   isSavingEdit: boolean;
+  editError: string;
   onToggleBotStatus: (botId: string, currentStatus: boolean) => void;
   onStartEditingBot: (bot: BotRecord) => void;
   onDeleteBot: (botId: string) => void;
   onCancelEditingBot: () => void;
   onSaveBotEdits: (botId: string) => void;
+  onClearEditError: () => void;
   onEditAiModelChange: (value: string) => void;
   onEditSystemPromptChange: (value: string) => void;
   onEditWelcomeMessageChange: (value: string) => void;
@@ -161,11 +204,13 @@ function BotCard({
   isEditing,
   editForm,
   isSavingEdit,
+  editError,
   onToggleBotStatus,
   onStartEditingBot,
   onDeleteBot,
   onCancelEditingBot,
   onSaveBotEdits,
+  onClearEditError,
   onEditAiModelChange,
   onEditSystemPromptChange,
   onEditWelcomeMessageChange,
@@ -241,12 +286,12 @@ function BotCard({
             >
               Edit
             </button>
-            <Link
+            <a
               href={`/interactions?botId=${bot.id}`}
               className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${isDarkMode ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-100 text-slate-700 hover:bg-slate-200"}`}
             >
               Interactions
-            </Link>
+            </a>
             <button
               onClick={() => onDeleteBot(bot.id)}
               className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition-all ${isDarkMode ? "bg-red-900/30 text-red-400 hover:bg-red-900/50" : "bg-red-100 text-red-700 hover:bg-red-200"}`}
@@ -263,8 +308,10 @@ function BotCard({
           botId={bot.id}
           form={editForm}
           isSavingEdit={isSavingEdit}
+          editError={editError}
           onSaveBotEdits={onSaveBotEdits}
           onCancelEditingBot={onCancelEditingBot}
+          onClearEditError={onClearEditError}
           onEditAiModelChange={onEditAiModelChange}
           onEditSystemPromptChange={onEditSystemPromptChange}
           onEditWelcomeMessageChange={onEditWelcomeMessageChange}
@@ -288,8 +335,10 @@ type EditBotPanelProps = {
   botId: string;
   form: EditFormState;
   isSavingEdit: boolean;
+  editError: string;
   onSaveBotEdits: (botId: string) => void;
   onCancelEditingBot: () => void;
+  onClearEditError: () => void;
   onEditAiModelChange: (value: string) => void;
   onEditSystemPromptChange: (value: string) => void;
   onEditWelcomeMessageChange: (value: string) => void;
@@ -309,8 +358,10 @@ function EditBotPanel({
   botId,
   form,
   isSavingEdit,
+  editError,
   onSaveBotEdits,
   onCancelEditingBot,
+  onClearEditError,
   onEditAiModelChange,
   onEditSystemPromptChange,
   onEditWelcomeMessageChange,
@@ -324,6 +375,8 @@ function EditBotPanel({
   onEditCrawlMaxPagesChange,
   onToggleEditWebSearch,
 }: EditBotPanelProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   return (
     <div className="mt-4 space-y-3">
       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -460,77 +513,109 @@ function EditBotPanel({
         )}
       </div>
 
-      <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
-        Crawl Settings
-      </label>
-      <div className="space-y-2">
-        <div>
-          <label className="text-xs font-medium text-slate-500">
-            Max Crawl Depth (levels)
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="5"
-            value={form.crawlMaxDepth}
-            onChange={(event) =>
-              onEditCrawlMaxDepthChange(
-                Math.max(1, Math.min(5, Number.parseInt(event.currentTarget.value) || 2)),
-              )
-            }
-            className={editSettingsFieldClassName(isDarkMode)}
-          />
-        </div>
-        <div>
-          <label className="text-xs font-medium text-slate-500">
-            Max Pages to Crawl
-          </label>
-          <input
-            type="number"
-            min="1"
-            max="50"
-            value={form.crawlMaxPages}
-            onChange={(event) =>
-              onEditCrawlMaxPagesChange(
-                Math.max(1, Math.min(50, Number.parseInt(event.currentTarget.value) || 10)),
-              )
-            }
-            className={editSettingsFieldClassName(isDarkMode)}
-          />
-        </div>
-      </div>
-
-      <div
-        className={`flex items-center justify-between rounded-xl border p-3 ${isDarkMode ? "border-slate-800 bg-slate-800/30" : "border-slate-200 bg-white/50"}`}
-      >
-        <div>
-          <p
-            className={`text-xs font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
-          >
-            Web Search
-          </p>
-          <p className="text-[11px] text-slate-500">
-            Search the web to supplement knowledge base
-          </p>
-        </div>
+      <div className={`rounded-xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
         <button
           type="button"
-          onClick={onToggleEditWebSearch}
-          className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-            form.webSearchEnabled
-              ? "bg-[#0088cc]"
-              : isDarkMode
-                ? "bg-slate-700"
-                : "bg-slate-200"
-          }`}
+          onClick={() => setShowAdvanced((v) => !v)}
+          className={`flex w-full items-center justify-between px-4 py-3 text-xs font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
         >
-          <span
-            className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-              form.webSearchEnabled ? "translate-x-4" : "translate-x-0"
-            }`}
+          Advanced Settings
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
           />
         </button>
+
+        {showAdvanced && (
+          <div className={`space-y-3 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+            <div className="space-y-2">
+              <p className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
+              <div>
+                <label className="text-xs font-medium text-slate-500">
+                  Max Crawl Depth (levels)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  value={form.crawlMaxDepth}
+                  onChange={(event) =>
+                    onEditCrawlMaxDepthChange(
+                      Math.max(1, Math.min(5, Number.parseInt(event.currentTarget.value) || 2)),
+                    )
+                  }
+                  className={editSettingsFieldClassName(isDarkMode)}
+                />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-slate-500">
+                  Max Pages to Crawl
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="50"
+                  value={form.crawlMaxPages}
+                  onChange={(event) =>
+                    onEditCrawlMaxPagesChange(
+                      Math.max(1, Math.min(50, Number.parseInt(event.currentTarget.value) || 10)),
+                    )
+                  }
+                  className={editSettingsFieldClassName(isDarkMode)}
+                />
+              </div>
+            </div>
+
+            <div
+              className={`flex items-center justify-between rounded-xl border p-3 ${isDarkMode ? "border-slate-700 bg-slate-800/30" : "border-slate-200 bg-white/50"}`}
+            >
+              <div>
+                <p className={`text-xs font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}>
+                  Web Search
+                </p>
+                <p className="text-[11px] text-slate-500">
+                  Search the web to supplement knowledge base
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={onToggleEditWebSearch}
+                className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
+                  form.webSearchEnabled
+                    ? "bg-[#0088cc]"
+                    : isDarkMode
+                      ? "bg-slate-700"
+                      : "bg-slate-200"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    form.webSearchEnabled ? "translate-x-4" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
+
+      {editError && (
+        <div
+          className={`flex items-start justify-between gap-2 rounded-xl border px-3 py-2.5 text-sm ${
+            isDarkMode
+              ? "border-red-900/60 bg-red-950/40 text-red-300"
+              : "border-red-200 bg-red-50 text-red-700"
+          }`}
+        >
+          <span>{editError}</span>
+          <button
+            type="button"
+            onClick={onClearEditError}
+            className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <Button

@@ -1,7 +1,7 @@
 "use client";
 
-import { FormEvent, ReactNode } from "react";
-import { FileText, Globe, Plus, Settings, Trash2, Upload } from "lucide-react";
+import { FormEvent, ReactNode, useState } from "react";
+import { ChevronDown, FileText, Globe, Plus, Settings, Trash2, Upload } from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
@@ -56,6 +56,8 @@ export function DeployBotSection({
   onFilesChange,
   onRemoveFile,
 }: DeployBotSectionProps) {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
   return (
     <section
       className={`col-span-1 h-fit rounded-2xl sm:rounded-[2.5rem] border p-4 sm:p-6 shadow-none backdrop-blur-2xl transition-all md:p-8 md:shadow-2xl lg:col-span-5 lg:p-10 ${
@@ -260,102 +262,99 @@ export function DeployBotSection({
               </div>
             </InputBlock>
 
-            <div
-              className={`rounded-xl sm:rounded-2xl border p-4 sm:p-5 ${
-                isDarkMode
-                  ? "border-slate-800 bg-slate-800/30"
-                  : "border-slate-200 bg-white/50"
-              }`}
-            >
-              <p
-                className={`mb-3 sm:mb-4 text-base sm:text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
-              >
-                Crawl Settings
-              </p>
-              <div className="space-y-4 sm:space-y-3">
-                <div>
-                  <label className="text-xs font-medium text-slate-500">
-                    Max Crawl Depth (levels)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="5"
-                    value={form.crawlMaxDepth}
-                    onChange={(event) =>
-                      onCrawlMaxDepthChange(
-                        Math.max(
-                          1,
-                          Math.min(5, Number.parseInt(event.currentTarget.value) || 2),
-                        ),
-                      )
-                    }
-                    className={settingsFieldClassName(isDarkMode)}
-                  />
-                  <p className="mt-1 text-xs text-slate-500">
-                    How many levels deep to crawl (1-5, default: 2)
-                  </p>
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-slate-500">
-                    Max Pages to Crawl
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="50"
-                    value={form.crawlMaxPages}
-                    onChange={(event) =>
-                      onCrawlMaxPagesChange(
-                        Math.max(
-                          1,
-                          Math.min(50, Number.parseInt(event.currentTarget.value) || 10),
-                        ),
-                      )
-                    }
-                    className={settingsFieldClassName(isDarkMode)}
-                  />
-                  <p className="mt-1 text-xs text-slate-500">
-                    Maximum pages to crawl per URL (1-50, default: 10)
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div
-              className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 rounded-xl sm:rounded-2xl border p-4 sm:p-5 ${
-                isDarkMode
-                  ? "border-slate-800 bg-slate-800/30"
-                  : "border-slate-200 bg-white/50"
-              }`}
-            >
-              <div className="flex-1">
-                <p
-                  className={`text-base sm:text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
-                >
-                  Web Search
-                </p>
-                <p className="text-sm sm:text-xs text-slate-500 mt-1">
-                  Let the bot search the web to supplement its knowledge base
-                </p>
-              </div>
+            <div className={`rounded-xl sm:rounded-2xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
               <button
                 type="button"
-                onClick={onToggleWebSearch}
-                className={`relative inline-flex h-7 sm:h-6 w-12 sm:w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                  form.webSearchEnabled
-                    ? "bg-[#0088cc]"
-                    : isDarkMode
-                      ? "bg-slate-700"
-                      : "bg-slate-200"
-                }`}
+                onClick={() => setShowAdvanced((v) => !v)}
+                className={`flex w-full items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
               >
-                <span
-                  className={`pointer-events-none inline-block h-6 sm:h-5 w-6 sm:w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    form.webSearchEnabled ? "translate-x-5 sm:translate-x-5" : "translate-x-0.5 sm:translate-x-0"
-                  }`}
+                Advanced Settings
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
                 />
               </button>
+
+              {showAdvanced && (
+                <div className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+                  <div className="space-y-3">
+                    <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500">
+                        Max Crawl Depth (levels)
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="5"
+                        value={form.crawlMaxDepth}
+                        onChange={(event) =>
+                          onCrawlMaxDepthChange(
+                            Math.max(
+                              1,
+                              Math.min(5, Number.parseInt(event.currentTarget.value) || 2),
+                            ),
+                          )
+                        }
+                        className={settingsFieldClassName(isDarkMode)}
+                      />
+                      <p className="mt-1 text-xs text-slate-500">
+                        How many levels deep to crawl (1-5, default: 2)
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-slate-500">
+                        Max Pages to Crawl
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="50"
+                        value={form.crawlMaxPages}
+                        onChange={(event) =>
+                          onCrawlMaxPagesChange(
+                            Math.max(
+                              1,
+                              Math.min(50, Number.parseInt(event.currentTarget.value) || 10),
+                            ),
+                          )
+                        }
+                        className={settingsFieldClassName(isDarkMode)}
+                      />
+                      <p className="mt-1 text-xs text-slate-500">
+                        Maximum pages to crawl per URL (1-50, default: 10)
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className={`flex items-center justify-between rounded-xl border p-3 sm:p-4 ${isDarkMode ? "border-slate-700 bg-slate-800/30" : "border-slate-200 bg-white/50"}`}>
+                    <div className="flex-1">
+                      <p className={`text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}>
+                        Web Search
+                      </p>
+                      <p className="text-xs text-slate-500 mt-0.5">
+                        Let the bot search the web to supplement its knowledge base
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onToggleWebSearch}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4 ${
+                        form.webSearchEnabled
+                          ? "bg-[#0088cc]"
+                          : isDarkMode
+                            ? "bg-slate-700"
+                            : "bg-slate-200"
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                          form.webSearchEnabled ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <ModelHint isDarkMode={isDarkMode} />

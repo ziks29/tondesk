@@ -31,6 +31,15 @@ export async function verifyPendingTopups() {
       return;
     }
 
+    // Warn about very old pending transactions (> 10 minutes)
+    const oldPending = pendingTopups.filter(tx => Date.now() - tx.createdAt.getTime() > 10 * 60 * 1000);
+    if (oldPending.length > 0) {
+      console.warn(
+        `[Jobs] ⚠️  ${oldPending.length} topup(s) still pending after 10+ minutes: ` +
+        oldPending.map(tx => `${tx.id}(${Math.round((Date.now() - tx.createdAt.getTime()) / 60000)}m)`).join(', ')
+      );
+    }
+
     console.log(`[Jobs] Verifying ${pendingTopups.length} pending topups`);
 
     // Verify all pending topups in parallel
@@ -39,24 +48,35 @@ export async function verifyPendingTopups() {
     );
 
     let verified = 0;
+    let pending = 0;
     let failed = 0;
 
     results.forEach((result, index) => {
+      const tx = pendingTopups[index];
       if (result.status === "fulfilled") {
         if (result.value.status === "completed") {
           verified++;
+          console.log(`[Jobs] ✓ Topup ${tx.id} completed: ${tx.amount} TON → ${tx.credits} credits`);
+        } else if (result.value.status === "pending") {
+          pending++;
+          const ageMs = Date.now() - tx.createdAt.getTime();
+          const ageMins = Math.round(ageMs / 60000);
+          console.log(`[Jobs] ⏳ Topup ${tx.id} still pending (${ageMins}m old)`);
+        } else if (result.value.status === "failed") {
+          failed++;
+          console.warn(`[Jobs] ✗ Topup ${tx.id} failed: ${result.value.error}`);
         }
       } else {
         failed++;
         console.error(
-          `[Jobs] Failed to verify topup ${pendingTopups[index].id}:`,
+          `[Jobs] ✗ Error verifying topup ${tx.id}:`,
           result.reason,
         );
       }
     });
 
     console.log(
-      `[Jobs] Verification complete: ${verified} completed, ${failed} errors`,
+      `[Jobs] Verification complete: ${verified} completed, ${pending} pending, ${failed} failed`,
     );
   } catch (error) {
     console.error("[Jobs] Error in verifyPendingTopups:", error);

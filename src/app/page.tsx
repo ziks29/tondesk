@@ -9,6 +9,7 @@ import {
 } from "@tonconnect/ui-react";
 
 import { Page } from "@/components/Page";
+import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { useTheme } from "@/core/theme/provider";
 
 import { BotsSection } from "./home/components/BotsSection";
@@ -78,6 +79,10 @@ export default function Home() {
   const [isLoadingBots, setIsLoadingBots] = useState(false);
   const [editForm, setEditForm] = useState<EditFormState>(initialEditForm);
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [deletingBotId, setDeletingBotId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const createAuthHeaders = (contentType?: string) => {
     const headers = new Headers();
@@ -240,6 +245,7 @@ export default function Home() {
   };
 
   const startEditingBot = (bot: BotRecord) => {
+    setEditError("");
     setEditForm({
       botId: bot.id,
       knowledgeBaseText: bot.knowledgeBaseText || "",
@@ -255,6 +261,7 @@ export default function Home() {
   };
 
   const cancelEditingBot = () => {
+    setEditError("");
     setEditForm(initialEditForm);
   };
 
@@ -313,47 +320,48 @@ export default function Home() {
               : bot,
           ),
         );
+        setEditError("");
         setEditForm(initialEditForm);
       } else {
-        alert(data.error || "Failed to edit bot");
+        setEditError(data.error || "Failed to edit bot");
       }
-    } catch (editError) {
-      console.error("Failed to edit bot:", editError);
-      alert("Failed to save changes.");
+    } catch (saveError) {
+      console.error("Failed to edit bot:", saveError);
+      setEditError("Failed to save changes.");
     } finally {
       setIsSavingEdit(false);
     }
   };
 
-  const deleteBot = async (botId: string) => {
-    if (!walletAddress) {
-      return;
-    }
+  const requestDeleteBot = (botId: string) => {
+    if (!walletAddress) return;
+    setDeleteError("");
+    setDeletingBotId(botId);
+  };
 
-    if (
-      !confirm(
-        "Are you sure you want to delete this bot? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
-
+  const confirmDeleteBot = async () => {
+    if (!deletingBotId || !walletAddress) return;
+    setIsDeleting(true);
+    setDeleteError("");
     try {
       const res = await fetch("/api/bots/delete", {
         method: "POST",
         headers: createAuthHeaders("application/json"),
-        body: JSON.stringify({ botId, ownerWallet: walletAddress }),
+        body: JSON.stringify({ botId: deletingBotId, ownerWallet: walletAddress }),
       });
-
       if (res.ok) {
-        setMyBots((currentBots) => currentBots.filter((bot) => bot.id !== botId));
+        setMyBots((currentBots) => currentBots.filter((bot) => bot.id !== deletingBotId));
+        setDeletingBotId(null);
         fetchWalletSummary();
       } else {
         const errorData = await res.json();
-        alert(errorData.error || "Failed to delete bot");
+        setDeleteError(errorData.error || "Failed to delete bot");
       }
     } catch (deleteError) {
       console.error("Failed to delete bot:", deleteError);
+      setDeleteError("Failed to delete bot.");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -410,51 +418,77 @@ export default function Home() {
       const pendingTransactionId = initData.transaction.id as string;
       setWalletStatus("Transaction sent. Waiting for blockchain confirmation...");
 
-      for (let attempt = 0; attempt < 10; attempt += 1) {
-        const confirmRes = await fetch("/api/user/wallet/topup/confirm", {
-          method: "POST",
-          headers: createAuthHeaders("application/json"),
-          body: JSON.stringify({ transactionId: pendingTransactionId }),
-        });
-        const confirmData = await confirmRes.json();
+      const maxAttempts = 20;
+      const delayMs = 3000;
+      let lastError = "Unknown verification error";
 
-        if (!confirmRes.ok) {
-          throw new Error(confirmData.error || "Top-up verification failed.");
-        }
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        try {
+          const confirmRes = await fetch("/api/user/wallet/topup/confirm", {
+            method: "POST",
+            headers: createAuthHeaders("application/json"),
+            body: JSON.stringify({ transactionId: pendingTransactionId }),
+          });
+          const confirmData = await confirmRes.json();
 
-        if (confirmData.status === "completed") {
-          setWalletSummary((current) =>
-            current
-              ? {
-                  ...current,
-                  credits: confirmData.wallet.credits,
-                  totalTopups: confirmData.wallet.totalTopups,
-                  transactions: [confirmData.transaction, ...current.transactions].slice(0, 10),
-                }
-              : current,
-          );
+          if (!confirmRes.ok) {
+            lastError = confirmData.error || "Verification request failed";
+            if (attempt === maxAttempts - 1) {
+              throw new Error(lastError);
+            }
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+            continue;
+          }
+
+          if (confirmData.status === "completed") {
+            setWalletSummary((current) =>
+              current
+                ? {
+                    ...current,
+                    credits: confirmData.wallet.credits,
+                    totalTopups: confirmData.wallet.totalTopups,
+                    transactions: [confirmData.transaction, ...current.transactions].slice(0, 10),
+                  }
+                : current,
+            );
+            setWalletStatus(
+              `✓ Wallet topped up with ${normalizedAmount} TON!`,
+            );
+            return;
+          }
+
+          if (confirmData.status === "failed") {
+            throw new Error(
+              confirmData.error || "Transaction failed on blockchain. Check your wallet and try again.",
+            );
+          }
+
+          // Status is "pending" - continue polling
+          const timeElapsed = Math.round((attempt + 1) * delayMs / 1000);
           setWalletStatus(
-            `Wallet topped up with ${normalizedAmount} TON after on-chain verification.`,
+            `Waiting for blockchain confirmation... (${timeElapsed}s, attempt ${attempt + 1}/${maxAttempts})`
           );
-          return;
+        } catch (pollError) {
+          if (pollError instanceof Error) {
+            lastError = pollError.message;
+          }
+          if (attempt === maxAttempts - 1) {
+            throw pollError;
+          }
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
         }
-
-        if (confirmData.status === "failed") {
-          throw new Error(confirmData.error || "Top-up verification failed.");
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 3000));
       }
 
       setWalletStatus(
-        "Transaction sent. Verification is still pending on-chain. Please check again in a moment.",
+        "Verification timeout. Your transaction is likely successful but still confirming on-chain. " +
+        "Check your wallet and refresh in a moment. The credits will appear once confirmed."
       );
       fetchWalletSummary();
     } catch (topUpError) {
-      setWalletError(
-        topUpError instanceof Error ? topUpError.message : "Top-up was cancelled.",
-      );
+      const errorMsg = topUpError instanceof Error ? topUpError.message : "Top-up was cancelled or failed.";
+      setWalletError(errorMsg);
       setWalletStatus("");
+      console.error("[topup] Error:", errorMsg);
     } finally {
       setIsTopUpPending(null);
     }
@@ -567,12 +601,14 @@ export default function Home() {
             editingBotId={editForm.botId}
             editForm={editForm}
             isSavingEdit={isSavingEdit}
+            editError={editError}
             onRefresh={fetchMyBots}
             onToggleBotStatus={toggleBotStatus}
             onStartEditingBot={startEditingBot}
-            onDeleteBot={deleteBot}
+            onDeleteBot={requestDeleteBot}
             onCancelEditingBot={cancelEditingBot}
             onSaveBotEdits={saveBotEdits}
+            onClearEditError={() => setEditError("")}
             onEditAiModelChange={(value) =>
               setEditForm((current) => ({ ...current, aiModel: value }))
             }
@@ -629,6 +665,23 @@ export default function Home() {
           />
         </div>
       </main>
+
+      {deletingBotId && (
+        <ConfirmModal
+          isDarkMode={isDarkMode}
+          title="Delete bot?"
+          message="This action cannot be undone. The bot will stop responding and all its data will be removed."
+          confirmLabel="Delete"
+          isDestructive
+          isLoading={isDeleting}
+          error={deleteError}
+          onConfirm={confirmDeleteBot}
+          onCancel={() => {
+            setDeletingBotId(null);
+            setDeleteError("");
+          }}
+        />
+      )}
     </Page>
   );
 }
