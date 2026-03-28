@@ -1,3 +1,7 @@
 ## 2024-05-18 - Concurrent Content Extraction for Telegram Bot Deployment
 **Learning:** During the deployment of a new Telegram bot (`src/app/api/bots/deploy/route.ts`), extracting content from user-provided URLs and files was performed sequentially using `for...of` loops. This created a performance bottleneck where I/O wait times accumulated O(N) rather than processing concurrently.
 **Action:** When performing independent I/O operations (like fetching multiple URLs or reading multiple files) in backend API routes, always use `Promise.all()` to map them into an array of concurrent promises. This reduces latency from the sum of all operations to the latency of the slowest single operation.
+
+## 2024-05-18 - Webhook Security vs Performance Anti-Pattern
+**Learning:** While attempting to optimize the Telegram webhook route by combining sequential queries via `include`, I hoisted `await request.json()` above the authentication check (`x-telegram-bot-api-secret-token`). This is a security anti-pattern because it forces the server to parse JSON payloads for unauthorized requests, reducing resilience against resource exhaustion and breaking error handling (throwing 500s instead of 401s on malformed bodies).
+**Action:** Never hoist payload parsing above authentication checks purely to enable database query optimizations. Performance optimizations must never compromise the security boundary or execution order of webhook validation.
