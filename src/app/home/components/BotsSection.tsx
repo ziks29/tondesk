@@ -464,6 +464,7 @@ function EditBotPanel({
                 type="button"
                 onClick={() => onRemoveEditUrl(index)}
                 className="rounded-xl px-2 py-1 text-slate-400 transition-colors hover:text-red-500"
+                aria-label="Remove URL"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -504,6 +505,7 @@ function EditBotPanel({
                   type="button"
                   onClick={() => onRemoveEditFile(index)}
                   className="text-slate-400 hover:text-red-500"
+                  aria-label="Remove document"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -586,6 +588,7 @@ function EditBotPanel({
                       ? "bg-slate-700"
                       : "bg-slate-200"
                 }`}
+                aria-label="Toggle web search"
               >
                 <span
                   className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
@@ -611,6 +614,7 @@ function EditBotPanel({
             type="button"
             onClick={onClearEditError}
             className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
+            aria-label="Clear error message"
           >
             <X className="h-3.5 w-3.5" />
           </button>
