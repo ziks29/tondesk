@@ -462,6 +462,7 @@ function EditBotPanel({
             {form.urls.length > 1 && (
               <button
                 type="button"
+                aria-label="Remove URL"
                 onClick={() => onRemoveEditUrl(index)}
                 className="rounded-xl px-2 py-1 text-slate-400 transition-colors hover:text-red-500"
               >
@@ -502,6 +503,7 @@ function EditBotPanel({
                 <span className="truncate pr-2">{file.name}</span>
                 <button
                   type="button"
+                  aria-label="Remove file"
                   onClick={() => onRemoveEditFile(index)}
                   className="text-slate-400 hover:text-red-500"
                 >
@@ -609,6 +611,7 @@ function EditBotPanel({
           <span>{editError}</span>
           <button
             type="button"
+            aria-label="Clear error"
             onClick={onClearEditError}
             className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
           >
