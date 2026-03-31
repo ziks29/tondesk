@@ -25,22 +25,23 @@ export async function POST(request: Request) {
     const normalizedAmount = Number(amountTon.toFixed(4));
     const credits = tonToCredits(normalizedAmount);
 
-    await prisma.user.upsert({
-      where: { walletAddress },
-      update: {},
-      create: { walletAddress },
-    });
-
-    const transaction = await prisma.transaction.create({
-      data: {
-        walletAddress,
-        amount: normalizedAmount,
-        credits,
-        type: 'topup',
-        tonConnectTxHash: typeof tonConnectTxHash === 'string' ? tonConnectTxHash : null,
-        status: 'pending',
-      },
-    });
+    const [, transaction] = await prisma.$transaction([
+      prisma.user.upsert({
+        where: { walletAddress },
+        update: {},
+        create: { walletAddress },
+      }),
+      prisma.transaction.create({
+        data: {
+          walletAddress,
+          amount: normalizedAmount,
+          credits,
+          type: 'topup',
+          tonConnectTxHash: typeof tonConnectTxHash === 'string' ? tonConnectTxHash : null,
+          status: 'pending',
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       ok: true,
