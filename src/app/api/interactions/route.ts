@@ -29,21 +29,21 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized to view this bot' }, { status: 403 });
     }
 
-    // Efficient distinct chat count using raw SQL
-    const countResult = await prisma.$queryRaw<[{ count: bigint }]>`
-      SELECT COUNT(DISTINCT "chatId") as count FROM "Interaction" WHERE "botId" = ${botId}
-    `;
+    // Execute distinct chat count and paginated chat summaries concurrently
+    const [countResult, chatSummaries] = await Promise.all([
+      prisma.$queryRaw<[{ count: bigint }]>`
+        SELECT COUNT(DISTINCT "chatId") as count FROM "Interaction" WHERE "botId" = ${botId}
+      `,
+      prisma.interaction.groupBy({
+        by: ['chatId'],
+        where: { botId },
+        _max: { createdAt: true },
+        orderBy: { _max: { createdAt: 'desc' } },
+        take: pageSize,
+        skip: (page - 1) * pageSize,
+      })
+    ]);
     const totalChats = Number(countResult[0]?.count ?? 0);
-
-    // Get paginated chat groups, sorted by most recent interaction
-    const chatSummaries = await prisma.interaction.groupBy({
-      by: ['chatId'],
-      where: { botId },
-      _max: { createdAt: true },
-      orderBy: { _max: { createdAt: 'desc' } },
-      take: pageSize,
-      skip: (page - 1) * pageSize,
-    });
 
     const chatIds = chatSummaries.map((s) => s.chatId);
 
