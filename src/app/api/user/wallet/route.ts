@@ -32,26 +32,29 @@ export async function GET(request: Request) {
       );
     }
 
-    const user = await prisma.user.upsert({
-      where: { walletAddress },
-      update: {},
-      create: { walletAddress },
-      include: {
-        transactions: {
-          orderBy: { createdAt: 'desc' },
-          take: 10,
+    // ⚡ Bolt: Execute independent queries concurrently using Promise.all()
+    // Expected impact: Reduces database I/O latency from sum(O_upsert, O_count) to max(O_upsert, O_count)
+    const [user, botCount] = await Promise.all([
+      prisma.user.upsert({
+        where: { walletAddress },
+        update: {},
+        create: { walletAddress },
+        include: {
+          transactions: {
+            orderBy: { createdAt: 'desc' },
+            take: 10,
+          },
         },
-      },
-    });
-
-    const botCount = await prisma.bot.count({
-      where: {
-        OR: [
-          { userWalletAddress: walletAddress },
-          { ownerWallet: walletAddress },
-        ],
-      },
-    });
+      }),
+      prisma.bot.count({
+        where: {
+          OR: [
+            { userWalletAddress: walletAddress },
+            { ownerWallet: walletAddress },
+          ],
+        },
+      }),
+    ]);
 
     return NextResponse.json({
       ok: true,
