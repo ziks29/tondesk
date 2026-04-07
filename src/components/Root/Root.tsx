@@ -1,11 +1,13 @@
 'use client';
 
-import { type PropsWithChildren, useEffect } from 'react';
+import { type PropsWithChildren, useEffect, useState } from 'react';
 import {
+  isTMA,
   initData,
   useSignal,
 } from '@tma.js/sdk-react';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
+import { usePathname } from 'next/navigation';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { ErrorPage } from '@/components/ErrorPage';
@@ -23,7 +25,6 @@ function RootInner({ children }: PropsWithChildren) {
       ? '/api/tonconnect-manifest'
       : `${window.location.origin}/api/tonconnect-manifest`;
 
-  // Set the user locale
   useEffect(() => {
     initDataUser && setLocale(initDataUser.language_code);
   }, [initDataUser]);
@@ -45,16 +46,38 @@ function RootInner({ children }: PropsWithChildren) {
 }
 
 export function Root(props: PropsWithChildren) {
-  // Unfortunately, Telegram Mini Apps does not allow us to use all features of
-  // the Server Side Rendering. That's why we are showing loader on the server
-  // side.
   const didMount = useDidMount();
+  const pathname = usePathname();
+  const [tmaReady, setTmaReady] = useState(false);
 
-  return didMount ? (
+  const isWebPage = pathname?.startsWith('/web');
+
+  useEffect(() => {
+    if (isWebPage || process.env.NODE_ENV !== 'production') {
+      setTmaReady(true);
+      return;
+    }
+    isTMA('complete').then((result) => {
+      if (!result) {
+        window.location.replace('/web');
+      } else {
+        setTmaReady(true);
+      }
+    });
+  }, [isWebPage]);
+
+  // Landing page: render children with no TMA/TonConnect providers
+  if (isWebPage) {
+    return <>{props.children}</>;
+  }
+
+  if (!didMount || !tmaReady) {
+    return <div className="root__loading">Loading</div>;
+  }
+
+  return (
     <ErrorBoundary fallback={ErrorPage}>
       <RootInner {...props} />
     </ErrorBoundary>
-  ) : (
-    <div className="root__loading">Loading</div>
   );
 }
