@@ -1,3 +1,3 @@
-## 2024-05-18 - Concurrent Content Extraction for Telegram Bot Deployment
-**Learning:** During the deployment of a new Telegram bot (`src/app/api/bots/deploy/route.ts`), extracting content from user-provided URLs and files was performed sequentially using `for...of` loops. This created a performance bottleneck where I/O wait times accumulated O(N) rather than processing concurrently.
-**Action:** When performing independent I/O operations (like fetching multiple URLs or reading multiple files) in backend API routes, always use `Promise.all()` to map them into an array of concurrent promises. This reduces latency from the sum of all operations to the latency of the slowest single operation.
+## 2024-05-17 - Parallelizing DB Operations
+**Learning:** Sequential Prisma queries that are completely independent (like fetching user profile data and counting related records that aren't strictly connected to the immediate user object's relationships) can block the Next.js API thread unnecessarily, adding significant latency per request.
+**Action:** Use `Promise.all()` to fetch independent data sources concurrently where it does not compromise sequential logic like webhook signature checks.
