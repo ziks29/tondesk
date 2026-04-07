@@ -21,18 +21,36 @@ export default function Image() {
     >
       <div
         style={{
-          fontSize: 56,
-          fontWeight: 800,
-          color: '#0f172a',
-          textAlign: 'center',
-          lineHeight: 1.2,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
           marginBottom: 24,
         }}
       >
-        Build autonomous AI agents.{' '}
-        <span style={{ color: '#0088cc' }}>Trained on your knowledge.</span>
+        <span
+          style={{
+            fontSize: 56,
+            fontWeight: 800,
+            color: '#0f172a',
+            textAlign: 'center',
+            lineHeight: 1.2,
+          }}
+        >
+          Build autonomous AI agents.
+        </span>
+        <span
+          style={{
+            fontSize: 56,
+            fontWeight: 800,
+            color: '#0088cc',
+            textAlign: 'center',
+            lineHeight: 1.2,
+          }}
+        >
+          Trained on your knowledge.
+        </span>
       </div>
-      <div
+      <span
         style={{
           fontSize: 24,
           color: '#64748b',
@@ -42,12 +60,11 @@ export default function Image() {
         }}
       >
         Deploy a support agent, QA assistant, or sales bot to Telegram in minutes — no code required.
-      </div>
+      </span>
       <div
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: 12,
           background: '#0088cc',
           color: 'white',
           borderRadius: 16,
