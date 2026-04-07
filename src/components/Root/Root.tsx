@@ -50,7 +50,7 @@ export function Root(props: PropsWithChildren) {
   const pathname = usePathname();
   const [tmaReady, setTmaReady] = useState(false);
 
-  const isWebPage = pathname?.startsWith('/web');
+  const isWebPage = pathname === '/web' || pathname?.startsWith('/web/');
 
   useEffect(() => {
     if (isWebPage || process.env.NODE_ENV !== 'production') {
@@ -63,6 +63,8 @@ export function Root(props: PropsWithChildren) {
       } else {
         setTmaReady(true);
       }
+    }).catch(() => {
+      window.location.replace('/web');
     });
   }, [isWebPage]);
 
