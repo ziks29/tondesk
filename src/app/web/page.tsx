@@ -6,11 +6,11 @@ import { UseCases } from './components/UseCases';
 
 export default function WebPage() {
   return (
-    <main>
+    <main id="main-content">
       <Hero />
+      <HowItWorks />
       <UseCases />
       <Features />
-      <HowItWorks />
       <CTAFooter />
     </main>
   );

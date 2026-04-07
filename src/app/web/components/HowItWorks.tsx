@@ -18,22 +18,22 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section className="bg-slate-50 px-6 py-20">
+    <section id="how-it-works" className="bg-slate-50 px-6 py-20 lg:py-28">
       <div className="mx-auto max-w-5xl">
-        <h2 className="mb-12 text-center text-3xl font-bold text-slate-900">
+        <h2 className="mb-12 text-center text-3xl font-bold text-slate-900 sm:text-4xl">
           Live in three steps
         </h2>
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
           {steps.map((step, index) => (
             <div key={step.number} className="relative text-center">
               {index < steps.length - 1 && (
-                <div className="absolute left-[calc(50%+28px)] top-7 hidden h-0.5 w-[calc(100%-56px)] bg-slate-200 sm:block" />
+                <div className="absolute left-[calc(50%+28px)] top-7 hidden h-0.5 w-[calc(100%-56px)] bg-slate-200 lg:block" />
               )}
               <div className="relative mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[#0088cc] text-xl font-bold text-white">
                 {step.number}
               </div>
               <h3 className="mb-2 text-lg font-semibold text-slate-900">{step.title}</h3>
-              <p className="text-slate-500">{step.description}</p>
+              <p className="text-slate-600">{step.description}</p>
             </div>
           ))}
         </div>

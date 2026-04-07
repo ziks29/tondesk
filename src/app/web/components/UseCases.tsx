@@ -18,23 +18,23 @@ const cases = [
 
 export function UseCases() {
   return (
-    <section className="bg-slate-50 px-6 py-20">
+    <section className="bg-white px-6 py-20 lg:py-28">
       <div className="mx-auto max-w-5xl">
-        <h2 className="mb-4 text-center text-3xl font-bold text-slate-900">
-          What will you build?
-        </h2>
-        <p className="mb-12 text-center text-slate-500">
+        <h2 className="mb-4 text-center text-3xl font-bold text-slate-900 sm:text-4xl">
           One platform. Any use case. Your knowledge base.
+        </h2>
+        <p className="mb-12 text-center text-slate-600">
+          What will you build?
         </p>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {cases.map((c) => (
             <div
               key={c.title}
-              className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm transition hover:shadow-md"
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition hover:shadow-md"
             >
-              <div className="mb-4 text-4xl">{c.icon}</div>
+              <div className="mb-4 text-4xl" aria-hidden="true">{c.icon}</div>
               <h3 className="mb-2 text-xl font-semibold text-slate-900">{c.title}</h3>
-              <p className="text-slate-500">{c.description}</p>
+              <p className="text-slate-600">{c.description}</p>
             </div>
           ))}
         </div>
