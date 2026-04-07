@@ -6,7 +6,6 @@ import { Root } from "@/components/Root/Root";
 import { I18nProvider } from "@/core/i18n/provider";
 import { ThemeProvider } from "@/core/theme/provider";
 
-import "normalize.css/normalize.css";
 import "./_assets/globals.css";
 
 export const metadata: Metadata = {
