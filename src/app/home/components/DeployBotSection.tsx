@@ -181,6 +181,7 @@ export function DeployBotSection({
                       <button
                         type="button"
                         onClick={() => onRemoveUrl(index)}
+                        aria-label="Remove URL"
                         className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
                       >
                         <Trash2 className="h-5 sm:h-4 w-5 sm:w-4" />
@@ -251,6 +252,7 @@ export function DeployBotSection({
                         <button
                           type="button"
                           onClick={() => onRemoveFile(index)}
+                          aria-label="Remove file"
                           className="p-1.5 text-slate-400 hover:text-red-500"
                         >
                           <Trash2 className="h-4 w-4" />

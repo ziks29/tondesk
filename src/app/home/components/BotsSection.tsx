@@ -463,6 +463,7 @@ function EditBotPanel({
               <button
                 type="button"
                 onClick={() => onRemoveEditUrl(index)}
+                aria-label="Remove URL"
                 className="rounded-xl px-2 py-1 text-slate-400 transition-colors hover:text-red-500"
               >
                 <X className="h-4 w-4" />
@@ -503,6 +504,7 @@ function EditBotPanel({
                 <button
                   type="button"
                   onClick={() => onRemoveEditFile(index)}
+                  aria-label="Remove file"
                   className="text-slate-400 hover:text-red-500"
                 >
                   <X className="h-3 w-3" />
@@ -610,6 +612,7 @@ function EditBotPanel({
           <button
             type="button"
             onClick={onClearEditError}
+            aria-label="Clear error message"
             className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
           >
             <X className="h-3.5 w-3.5" />
