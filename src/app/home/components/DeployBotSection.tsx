@@ -182,6 +182,7 @@ export function DeployBotSection({
                         type="button"
                         onClick={() => onRemoveUrl(index)}
                         className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
+                        aria-label="Remove URL"
                       >
                         <Trash2 className="h-5 sm:h-4 w-5 sm:w-4" />
                       </button>
@@ -252,6 +253,7 @@ export function DeployBotSection({
                           type="button"
                           onClick={() => onRemoveFile(index)}
                           className="p-1.5 text-slate-400 hover:text-red-500"
+                          aria-label="Remove document"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -345,6 +347,7 @@ export function DeployBotSection({
                             ? "bg-slate-700"
                             : "bg-slate-200"
                       }`}
+                      aria-label="Toggle web search"
                     >
                       <span
                         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
