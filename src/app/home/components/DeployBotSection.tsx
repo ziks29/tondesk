@@ -180,6 +180,7 @@ export function DeployBotSection({
                     {form.urls.length > 1 && (
                       <button
                         type="button"
+                        aria-label="Remove URL"
                         onClick={() => onRemoveUrl(index)}
                         className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
                       >
@@ -250,6 +251,7 @@ export function DeployBotSection({
                         </div>
                         <button
                           type="button"
+                          aria-label="Remove file"
                           onClick={() => onRemoveFile(index)}
                           className="p-1.5 text-slate-400 hover:text-red-500"
                         >
@@ -337,6 +339,9 @@ export function DeployBotSection({
                     </div>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={form.webSearchEnabled}
+                      aria-label="Enable Web Search"
                       onClick={onToggleWebSearch}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4 ${
                         form.webSearchEnabled
