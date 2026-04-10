@@ -180,6 +180,7 @@ export function DeployBotSection({
                     {form.urls.length > 1 && (
                       <button
                         type="button"
+                        aria-label="Remove URL"
                         onClick={() => onRemoveUrl(index)}
                         className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
                       >
@@ -250,6 +251,7 @@ export function DeployBotSection({
                         </div>
                         <button
                           type="button"
+                          aria-label="Remove file"
                           onClick={() => onRemoveFile(index)}
                           className="p-1.5 text-slate-400 hover:text-red-500"
                         >
