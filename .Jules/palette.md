@@ -1,0 +1,3 @@
+## 2025-02-14 - Added ARIA attributes to DeployBotSection and BotsSection
+**Learning:** Icon-only buttons (using `lucide-react` icons like `Trash2` or `X`) lack implicit accessibility context, making them opaque to screen readers.
+**Action:** Always add descriptive `aria-label` and `title` attributes to the button element, and apply `aria-hidden="true"` to the inner SVG icon to prevent redundant or confusing screen reader announcements. Custom toggle buttons should also include `role="switch"` and `aria-checked={boolean}` state.
