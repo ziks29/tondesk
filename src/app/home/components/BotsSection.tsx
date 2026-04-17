@@ -578,6 +578,9 @@ function EditBotPanel({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={form.webSearchEnabled}
+                aria-label="Enable web search"
                 onClick={onToggleEditWebSearch}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
                   form.webSearchEnabled
