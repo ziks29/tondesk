@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility standards for interactive elements
+**Learning:** Found several icon-only buttons (like delete icons) and custom UI switches missing standard screen reader attributes (`aria-label`, `title`, `aria-hidden` on SVGs, `aria-expanded` on collapsible sections, and `role="switch"`).
+**Action:** When working on UI components, routinely check that icon buttons have accessible names and hidden SVGs, collapsible triggers have `aria-expanded`, and custom toggle inputs implement the proper ARIA roles (`switch` and `aria-checked`) to ensure baseline accessibility across the app.

@@ -182,8 +182,10 @@ export function DeployBotSection({
                         type="button"
                         onClick={() => onRemoveUrl(index)}
                         className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
+                        aria-label="Remove URL"
+                        title="Remove URL"
                       >
-                        <Trash2 className="h-5 sm:h-4 w-5 sm:w-4" />
+                        <Trash2 className="h-5 sm:h-4 w-5 sm:w-4" aria-hidden="true" />
                       </button>
                     )}
                   </div>
@@ -252,8 +254,10 @@ export function DeployBotSection({
                           type="button"
                           onClick={() => onRemoveFile(index)}
                           className="p-1.5 text-slate-400 hover:text-red-500"
+                          aria-label="Remove file"
+                          title="Remove file"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
                         </button>
                       </div>
                     ))}
@@ -266,6 +270,7 @@ export function DeployBotSection({
               <button
                 type="button"
                 onClick={() => setShowAdvanced((v) => !v)}
+                aria-expanded={showAdvanced}
                 className={`flex w-full items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
               >
                 Advanced Settings
@@ -337,6 +342,8 @@ export function DeployBotSection({
                     </div>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={form.webSearchEnabled}
                       onClick={onToggleWebSearch}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4 ${
                         form.webSearchEnabled
