@@ -464,8 +464,10 @@ function EditBotPanel({
                 type="button"
                 onClick={() => onRemoveEditUrl(index)}
                 className="rounded-xl px-2 py-1 text-slate-400 transition-colors hover:text-red-500"
+                aria-label="Remove URL"
+                title="Remove URL"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -504,8 +506,10 @@ function EditBotPanel({
                   type="button"
                   onClick={() => onRemoveEditFile(index)}
                   className="text-slate-400 hover:text-red-500"
+                  aria-label="Remove file"
+                  title="Remove file"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -517,6 +521,7 @@ function EditBotPanel({
         <button
           type="button"
           onClick={() => setShowAdvanced((v) => !v)}
+          aria-expanded={showAdvanced}
           className={`flex w-full items-center justify-between px-4 py-3 text-xs font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
         >
           Advanced Settings
@@ -578,6 +583,8 @@ function EditBotPanel({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={form.webSearchEnabled}
                 onClick={onToggleEditWebSearch}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
                   form.webSearchEnabled
@@ -611,8 +618,10 @@ function EditBotPanel({
             type="button"
             onClick={onClearEditError}
             className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
+            aria-label="Clear error"
+            title="Clear error"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
       )}
