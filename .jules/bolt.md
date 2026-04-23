@@ -1,3 +1,7 @@
 ## 2024-05-18 - Concurrent Content Extraction for Telegram Bot Deployment
 **Learning:** During the deployment of a new Telegram bot (`src/app/api/bots/deploy/route.ts`), extracting content from user-provided URLs and files was performed sequentially using `for...of` loops. This created a performance bottleneck where I/O wait times accumulated O(N) rather than processing concurrently.
 **Action:** When performing independent I/O operations (like fetching multiple URLs or reading multiple files) in backend API routes, always use `Promise.all()` to map them into an array of concurrent promises. This reduces latency from the sum of all operations to the latency of the slowest single operation.
+
+## 2024-05-18 - Concurrent Database Queries in API Routes
+**Learning:** In `src/app/api/user/wallet/route.ts` and `src/app/api/interactions/route.ts`, multiple independent Prisma database queries were being `await`ed sequentially. For instance, fetching a user and getting the count of their bots were done one after another. This sequential execution increases the total latency of the API endpoint to the sum of the latencies of all individual queries.
+**Action:** When performing multiple database queries that do not depend on each other's results (e.g., fetching a user profile and counting their associated entities based on an already known identifier like a wallet address), wrap them in `Promise.all()` to execute them concurrently. This reduces the total database latency to that of the slowest single query.
