@@ -464,8 +464,9 @@ function EditBotPanel({
                 type="button"
                 onClick={() => onRemoveEditUrl(index)}
                 className="rounded-xl px-2 py-1 text-slate-400 transition-colors hover:text-red-500"
+                aria-label="Remove URL"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </button>
             )}
           </div>
@@ -504,8 +505,9 @@ function EditBotPanel({
                   type="button"
                   onClick={() => onRemoveEditFile(index)}
                   className="text-slate-400 hover:text-red-500"
+                  aria-label="Remove file"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </button>
               </div>
             ))}
@@ -579,6 +581,8 @@ function EditBotPanel({
               <button
                 type="button"
                 onClick={onToggleEditWebSearch}
+                role="switch"
+                aria-checked={form.webSearchEnabled}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
                   form.webSearchEnabled
                     ? "bg-[#0088cc]"
@@ -611,8 +615,9 @@ function EditBotPanel({
             type="button"
             onClick={onClearEditError}
             className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
+            aria-label="Dismiss error"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-3.5 w-3.5" aria-hidden="true" />
           </button>
         </div>
       )}
