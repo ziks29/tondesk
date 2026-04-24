@@ -42,4 +42,4 @@ certificates
 
 # databasew
 dev.db
-prisma/dev.db
+prisma/dev.dbdev_server.log
