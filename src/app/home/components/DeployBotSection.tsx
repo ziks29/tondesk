@@ -180,10 +180,12 @@ export function DeployBotSection({
                     {form.urls.length > 1 && (
                       <button
                         type="button"
+                        aria-label="Remove URL"
+                        title="Remove URL"
                         onClick={() => onRemoveUrl(index)}
                         className="p-2.5 sm:p-2 text-slate-400 transition-colors hover:text-red-500 shrink-0"
                       >
-                        <Trash2 className="h-5 sm:h-4 w-5 sm:w-4" />
+                        <Trash2 aria-hidden="true" className="h-5 sm:h-4 w-5 sm:w-4" />
                       </button>
                     )}
                   </div>
@@ -250,10 +252,12 @@ export function DeployBotSection({
                         </div>
                         <button
                           type="button"
+                          aria-label="Remove file"
+                          title="Remove file"
                           onClick={() => onRemoveFile(index)}
                           className="p-1.5 text-slate-400 hover:text-red-500"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 aria-hidden="true" className="h-4 w-4" />
                         </button>
                       </div>
                     ))}
@@ -265,17 +269,20 @@ export function DeployBotSection({
             <div className={`rounded-xl sm:rounded-2xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
               <button
                 type="button"
+                aria-expanded={showAdvanced}
+                aria-controls="advanced-settings-panel"
                 onClick={() => setShowAdvanced((v) => !v)}
                 className={`flex w-full items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
               >
                 Advanced Settings
                 <ChevronDown
+                  aria-hidden="true"
                   className={`h-4 w-4 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
                 />
               </button>
 
               {showAdvanced && (
-                <div className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+                <div id="advanced-settings-panel" className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
                   <div className="space-y-3">
                     <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
                     <div>
@@ -337,6 +344,9 @@ export function DeployBotSection({
                     </div>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={form.webSearchEnabled}
+                      aria-label="Enable Web Search"
                       onClick={onToggleWebSearch}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4 ${
                         form.webSearchEnabled

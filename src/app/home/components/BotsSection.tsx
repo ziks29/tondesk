@@ -462,10 +462,12 @@ function EditBotPanel({
             {form.urls.length > 1 && (
               <button
                 type="button"
+                aria-label="Remove URL"
+                title="Remove URL"
                 onClick={() => onRemoveEditUrl(index)}
                 className="rounded-xl px-2 py-1 text-slate-400 transition-colors hover:text-red-500"
               >
-                <X className="h-4 w-4" />
+                <X aria-hidden="true" className="h-4 w-4" />
               </button>
             )}
           </div>
@@ -502,10 +504,12 @@ function EditBotPanel({
                 <span className="truncate pr-2">{file.name}</span>
                 <button
                   type="button"
+                  aria-label="Remove file"
+                  title="Remove file"
                   onClick={() => onRemoveEditFile(index)}
                   className="text-slate-400 hover:text-red-500"
                 >
-                  <X className="h-3 w-3" />
+                  <X aria-hidden="true" className="h-3 w-3" />
                 </button>
               </div>
             ))}
@@ -516,17 +520,20 @@ function EditBotPanel({
       <div className={`rounded-xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
         <button
           type="button"
+          aria-expanded={showAdvanced}
+          aria-controls={`advanced-settings-panel-${botId}`}
           onClick={() => setShowAdvanced((v) => !v)}
           className={`flex w-full items-center justify-between px-4 py-3 text-xs font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
         >
           Advanced Settings
           <ChevronDown
+            aria-hidden="true"
             className={`h-3.5 w-3.5 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
           />
         </button>
 
         {showAdvanced && (
-          <div className={`space-y-3 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+          <div id={`advanced-settings-panel-${botId}`} className={`space-y-4 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
             <div className="space-y-2">
               <p className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
               <div>
@@ -578,6 +585,9 @@ function EditBotPanel({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={form.webSearchEnabled}
+                aria-label="Enable Web Search"
                 onClick={onToggleEditWebSearch}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
                   form.webSearchEnabled
@@ -609,10 +619,12 @@ function EditBotPanel({
           <span>{editError}</span>
           <button
             type="button"
+            aria-label="Cancel editing"
+            title="Cancel editing"
             onClick={onClearEditError}
             className="mt-0.5 shrink-0 opacity-60 hover:opacity-100"
           >
-            <X className="h-3.5 w-3.5" />
+            <X aria-hidden="true" className="h-3.5 w-3.5" />
           </button>
         </div>
       )}
