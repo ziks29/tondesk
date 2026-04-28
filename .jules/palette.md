@@ -1,0 +1,3 @@
+## 2026-04-28 - Adding accessibility attributes to custom toggles and switches
+**Learning:** When assigning `id` attributes to elements within a list or repeatedly rendered components (like bot editing panels), append a unique identifier (e.g., `${botId}`) to prevent ID duplication issues and ensure proper accessibility linkages (e.g., `aria-controls`). Custom switches must have `role="switch"` and `aria-checked`.
+**Action:** Always verify if a component renders once or multiple times before applying static IDs. Use dynamic IDs for anything rendered in a list or repeated component structure. Add `role="switch"` to toggle buttons.

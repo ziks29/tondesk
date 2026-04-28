@@ -516,6 +516,8 @@ function EditBotPanel({
       <div className={`rounded-xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
         <button
           type="button"
+          aria-expanded={showAdvanced}
+          aria-controls={`advanced-settings-bots-${botId}`}
           onClick={() => setShowAdvanced((v) => !v)}
           className={`flex w-full items-center justify-between px-4 py-3 text-xs font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
         >
@@ -526,7 +528,7 @@ function EditBotPanel({
         </button>
 
         {showAdvanced && (
-          <div className={`space-y-3 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+          <div id={`advanced-settings-bots-${botId}`} className={`space-y-3 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
             <div className="space-y-2">
               <p className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
               <div>
@@ -578,6 +580,8 @@ function EditBotPanel({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={form.webSearchEnabled}
                 onClick={onToggleEditWebSearch}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
                   form.webSearchEnabled
