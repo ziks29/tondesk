@@ -265,6 +265,8 @@ export function DeployBotSection({
             <div className={`rounded-xl sm:rounded-2xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
               <button
                 type="button"
+                aria-expanded={showAdvanced}
+                aria-controls="advanced-settings-deploy"
                 onClick={() => setShowAdvanced((v) => !v)}
                 className={`flex w-full items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
               >
@@ -275,7 +277,7 @@ export function DeployBotSection({
               </button>
 
               {showAdvanced && (
-                <div className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+                <div id="advanced-settings-deploy" className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
                   <div className="space-y-3">
                     <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
                     <div>
@@ -337,6 +339,8 @@ export function DeployBotSection({
                     </div>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={form.webSearchEnabled}
                       onClick={onToggleWebSearch}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4 ${
                         form.webSearchEnabled
