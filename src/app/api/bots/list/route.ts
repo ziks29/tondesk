@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 
 import { prisma } from '@/lib/prisma';
 import { requireTelegramAuth } from '@/lib/server-auth';
@@ -30,14 +31,19 @@ export async function GET(request: Request) {
 
     // Fetch unique users for all bots belonging to this owner in a single query
     const botIds = bots.map((bot) => bot.id);
-    const uniqueUsersGroups = await prisma.interaction.groupBy({
-      by: ['botId', 'chatId'],
-      where: { botId: { in: botIds } },
-    });
-
     const uniqueUserCounts: Record<string, number> = {};
-    for (const group of uniqueUsersGroups) {
-      uniqueUserCounts[group.botId] = (uniqueUserCounts[group.botId] || 0) + 1;
+
+    if (botIds.length > 0) {
+      const uniqueUsersGroups = await prisma.$queryRaw<{ botId: string; count: bigint | number }[]>`
+        SELECT "botId", COUNT(DISTINCT "chatId") as count
+        FROM "Interaction"
+        WHERE "botId" IN (${Prisma.join(botIds)})
+        GROUP BY "botId"
+      `;
+
+      for (const group of uniqueUsersGroups) {
+        uniqueUserCounts[group.botId] = Number(group.count);
+      }
     }
 
     const enrichedBots = bots.map((bot) => ({
