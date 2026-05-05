@@ -1,3 +1,6 @@
 ## 2024-05-18 - Concurrent Content Extraction for Telegram Bot Deployment
 **Learning:** During the deployment of a new Telegram bot (`src/app/api/bots/deploy/route.ts`), extracting content from user-provided URLs and files was performed sequentially using `for...of` loops. This created a performance bottleneck where I/O wait times accumulated O(N) rather than processing concurrently.
 **Action:** When performing independent I/O operations (like fetching multiple URLs or reading multiple files) in backend API routes, always use `Promise.all()` to map them into an array of concurrent promises. This reduces latency from the sum of all operations to the latency of the slowest single operation.
+## 2024-05-18 - Optimize unique counts in lists using $queryRaw
+**Learning:** Using Prisma's `groupBy` and manually counting in Node.js for calculating unique counts per group across many groups (e.g. unique users per bot) scales poorly and causes memory bloat. Database-level `COUNT(DISTINCT)` is much more efficient but requires `$queryRaw` when mapping over an array of IDs.
+**Action:** When calculating distinct counts for a list of items, use `prisma.$queryRaw` with `COUNT(DISTINCT)` and `Prisma.join()` instead of fetching groups to Node.js. Remember to explicitly cast the BigInt result to Number.
