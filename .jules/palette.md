@@ -1,0 +1,3 @@
+## 2025-02-12 - Ensure Proper ARIA Attributes for Custom Toggles and Collapsibles
+**Learning:** Custom UI components like switches and collapsible sections using standard HTML buttons must explicitly manage their states and roles using attributes like `role="switch"`, `aria-checked`, `aria-expanded`, and `aria-controls` to be screen reader compatible. Also, when repeating components in a list (like editing multiple bots), HTML `id`s for `aria-controls` must be dynamically unique (e.g., using `botId`).
+**Action:** Always add appropriate ARIA roles, checked/expanded states, labels, and uniquely linked control IDs when implementing or updating custom interactive components that deviate from standard form elements or simple buttons.
