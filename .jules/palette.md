@@ -1,0 +1,3 @@
+## 2024-10-24 - Switch Component Accessibility Pattern
+**Learning:** Custom toggle buttons used across the app's configuration panels (like Web Search enablement) frequently lack proper ARIA states, rendering critical functionality invisible to screen readers.
+**Action:** Enforce the use of `role="switch"`, `aria-checked={boolean}`, and descriptive `aria-label` properties on all custom interactive toggle elements.
