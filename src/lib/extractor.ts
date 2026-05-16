@@ -136,13 +136,20 @@ export async function extractFromUrl(
     // Deduplicate links to follow
     const uniqueLinks = Array.from(new Set(linksToFollow.map(normalizeUrl)));
 
-    // Recursively extract from links (sequentially to strictly respect maxPages, or concurrently if we manually handle limits)
-    // We do it sequentially here to accurately respect `state.pageCount < state.maxPages`
-    for (const link of uniqueLinks) {
+    // Recursively extract from links using bounded concurrency
+    const EXTRACTION_CHUNK_SIZE = 4;
+    for (let i = 0; i < uniqueLinks.length; i += EXTRACTION_CHUNK_SIZE) {
       if (state.pageCount >= state.maxPages) break;
-      const childText = await extractFromUrl(link, maxDepth - 1, state);
-      if (childText) {
-        extractedText += childText;
+      const chunk = uniqueLinks.slice(i, i + EXTRACTION_CHUNK_SIZE);
+      const childTexts = await Promise.all(
+        chunk.map(async (link) => {
+          if (state.pageCount >= state.maxPages) return '';
+          return await extractFromUrl(link, maxDepth - 1, state);
+        })
+      );
+
+      for (const text of childTexts) {
+        if (text) extractedText += text;
       }
     }
 

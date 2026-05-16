@@ -53,19 +53,35 @@ export async function POST(request: Request) {
     if (urlsJson) {
       try {
         const urls = JSON.parse(urlsJson) as string[];
-        for (const url of urls) {
+        const EXTRACTION_CHUNK_SIZE = 4;
+
+        for (let i = 0; i < urls.length; i += EXTRACTION_CHUNK_SIZE) {
           if (globalState.pageCount >= globalState.maxPages) break;
-          try {
-            // Process sequentially to respect global limits strictly
-            const content = await extractFromUrl(url, crawlMaxDepth, globalState);
-            if (content) {
-              extractedText += `\n\n[Crawl Results for: ${url}]${content}`;
-              crawledUrls.push(url);
+
+          const chunk = urls.slice(i, i + EXTRACTION_CHUNK_SIZE);
+          const results = await Promise.all(
+            chunk.map(async (url) => {
+              if (globalState.pageCount >= globalState.maxPages) return null;
+              try {
+                const content = await extractFromUrl(url, crawlMaxDepth, globalState);
+                return { url, content, error: null };
+              } catch (e) {
+                const errorMsg = e instanceof Error ? e.message : 'Failed to extract from URL';
+                console.error(`Error extracting from URL ${url}:`, errorMsg);
+                return { url, content: null, error: errorMsg };
+              }
+            })
+          );
+
+          for (const result of results) {
+            if (!result) continue;
+            if (result.error) {
+              return NextResponse.json({ error: `Invalid URL: ${result.url}` }, { status: 400 });
             }
-          } catch (e) {
-            const errorMsg = e instanceof Error ? e.message : 'Failed to extract from URL';
-            console.error(`Error extracting from URL ${url}:`, errorMsg);
-            return NextResponse.json({ error: `Invalid URL: ${url}` }, { status: 400 });
+            if (result.content) {
+              extractedText += `\n\n[Crawl Results for: ${result.url}]${result.content}`;
+              crawledUrls.push(result.url);
+            }
           }
         }
       } catch (e) {
