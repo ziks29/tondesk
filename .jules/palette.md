@@ -1,0 +1,3 @@
+## 2025-02-28 - Accessible Collapsibles and Lists
+**Learning:** The `aria-expanded` and `aria-controls` attributes are necessary for buttons that toggle collapsible sections. When these components are repeatedly rendered in a list (like bot editing panels), the `id` of the collapsible element must include a unique identifier (like the bot's ID) to ensure proper linkage without duplicate IDs.
+**Action:** Always append unique identifiers to HTML `id` attributes within lists and use them in the `aria-controls` attribute of the corresponding toggle button.
