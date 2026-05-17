@@ -95,7 +95,9 @@ export function BotsSection({
               : "border-slate-200 bg-slate-50 text-slate-400"
           }`}
         >
-          <p className="text-base sm:text-sm font-medium">No bots deployed yet.</p>
+          <p className="text-base sm:text-sm font-medium">
+            No bots deployed yet.
+          </p>
           <p className="mt-2 sm:mt-1 text-sm sm:text-xs">
             Connect your wallet and deploy your first bot to see it here.
           </p>
@@ -141,7 +143,9 @@ function BotCardSkeleton({ isDarkMode }: { isDarkMode: boolean }) {
   return (
     <div
       className={`animate-pulse rounded-2xl sm:rounded-[2.5rem] border p-4 sm:p-5 md:p-6 ${
-        isDarkMode ? "border-white/5 bg-slate-900/80" : "border-slate-100 bg-white"
+        isDarkMode
+          ? "border-white/5 bg-slate-900/80"
+          : "border-slate-100 bg-white"
       }`}
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:justify-between">
@@ -237,7 +241,9 @@ function BotCard({
           <p
             className={`font-mono text-sm sm:text-sm font-bold truncate ${isDarkMode ? "text-slate-200" : "text-slate-800"}`}
           >
-            {bot.botUsername ? `@${bot.botUsername}` : `${bot.botToken.split(":")[0]}:***`}
+            {bot.botUsername
+              ? `@${bot.botUsername}`
+              : `${bot.botToken.split(":")[0]}:***`}
           </p>
           <p className="text-xs sm:text-[10px] font-semibold uppercase tracking-tighter text-slate-500">
             Created {new Date(bot.createdAt).toLocaleDateString()}
@@ -262,7 +268,8 @@ function BotCard({
             <span>{bot.totalUniqueUsers || 0} users</span>
             <span>&bull;</span>
             <span className="text-[#0088cc]">
-              {MODELS.find((model) => model.id === bot.aiModel)?.name || "Unknown"}
+              {MODELS.find((model) => model.id === bot.aiModel)?.name ||
+                "Unknown"}
             </span>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -419,7 +426,9 @@ function EditBotPanel({
         rows={5}
         className={editFieldClassName(isDarkMode)}
         value={form.systemPrompt}
-        onChange={(event) => onEditSystemPromptChange(event.currentTarget.value)}
+        onChange={(event) =>
+          onEditSystemPromptChange(event.currentTarget.value)
+        }
       />
       <p className="mt-1 text-[10px] text-slate-500">
         Leave empty to use default system prompt
@@ -433,7 +442,9 @@ function EditBotPanel({
         placeholder="Hi! How can I help you today?"
         className={editFieldClassName(isDarkMode)}
         value={form.welcomeMessage}
-        onChange={(event) => onEditWelcomeMessageChange(event.currentTarget.value)}
+        onChange={(event) =>
+          onEditWelcomeMessageChange(event.currentTarget.value)
+        }
       />
 
       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -443,7 +454,9 @@ function EditBotPanel({
         rows={6}
         className={editFieldClassName(isDarkMode)}
         value={form.knowledgeBaseText}
-        onChange={(event) => onEditKnowledgeBaseChange(event.currentTarget.value)}
+        onChange={(event) =>
+          onEditKnowledgeBaseChange(event.currentTarget.value)
+        }
       />
 
       <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500">
@@ -457,7 +470,9 @@ function EditBotPanel({
               placeholder="https://docs.example.com"
               className={editFieldClassName(isDarkMode)}
               value={url}
-              onChange={(event) => onUpdateEditUrl(index, event.currentTarget.value)}
+              onChange={(event) =>
+                onUpdateEditUrl(index, event.currentTarget.value)
+              }
             />
             {form.urls.length > 1 && (
               <button
@@ -513,22 +528,34 @@ function EditBotPanel({
         )}
       </div>
 
-      <div className={`rounded-xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
+      <div
+        className={`rounded-xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}
+      >
         <button
           type="button"
           onClick={() => setShowAdvanced((v) => !v)}
+          aria-expanded={showAdvanced}
+          aria-controls={`edit-advanced-settings-${botId}`}
           className={`flex w-full items-center justify-between px-4 py-3 text-xs font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
         >
           Advanced Settings
           <ChevronDown
+            aria-hidden="true"
             className={`h-3.5 w-3.5 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
           />
         </button>
 
         {showAdvanced && (
-          <div className={`space-y-3 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+          <div
+            id={`edit-advanced-settings-${botId}`}
+            className={`space-y-3 border-t px-4 py-3 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}
+          >
             <div className="space-y-2">
-              <p className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
+              <p
+                className={`text-[10px] font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+              >
+                Crawl Settings
+              </p>
               <div>
                 <label className="text-xs font-medium text-slate-500">
                   Max Crawl Depth (levels)
@@ -540,7 +567,13 @@ function EditBotPanel({
                   value={form.crawlMaxDepth}
                   onChange={(event) =>
                     onEditCrawlMaxDepthChange(
-                      Math.max(1, Math.min(5, Number.parseInt(event.currentTarget.value) || 2)),
+                      Math.max(
+                        1,
+                        Math.min(
+                          5,
+                          Number.parseInt(event.currentTarget.value) || 2,
+                        ),
+                      ),
                     )
                   }
                   className={editSettingsFieldClassName(isDarkMode)}
@@ -557,7 +590,13 @@ function EditBotPanel({
                   value={form.crawlMaxPages}
                   onChange={(event) =>
                     onEditCrawlMaxPagesChange(
-                      Math.max(1, Math.min(50, Number.parseInt(event.currentTarget.value) || 10)),
+                      Math.max(
+                        1,
+                        Math.min(
+                          50,
+                          Number.parseInt(event.currentTarget.value) || 10,
+                        ),
+                      ),
                     )
                   }
                   className={editSettingsFieldClassName(isDarkMode)}
@@ -569,7 +608,9 @@ function EditBotPanel({
               className={`flex items-center justify-between rounded-xl border p-3 ${isDarkMode ? "border-slate-700 bg-slate-800/30" : "border-slate-200 bg-white/50"}`}
             >
               <div>
-                <p className={`text-xs font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}>
+                <p
+                  className={`text-xs font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                >
                   Web Search
                 </p>
                 <p className="text-[11px] text-slate-500">
@@ -578,6 +619,9 @@ function EditBotPanel({
               </div>
               <button
                 type="button"
+                role="switch"
+                aria-checked={form.webSearchEnabled}
+                aria-label="Enable Web Search"
                 onClick={onToggleEditWebSearch}
                 className={`relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-3 ${
                   form.webSearchEnabled

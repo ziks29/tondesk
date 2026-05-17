@@ -1,7 +1,15 @@
 "use client";
 
 import { FormEvent, ReactNode, useState } from "react";
-import { ChevronDown, FileText, Globe, Plus, Settings, Trash2, Upload } from "lucide-react";
+import {
+  ChevronDown,
+  FileText,
+  Globe,
+  Plus,
+  Settings,
+  Trash2,
+  Upload,
+} from "lucide-react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/Button";
@@ -89,7 +97,9 @@ export function DeployBotSection({
                 placeholder="123456:ABC-your-telegram-bot-token"
                 className={fieldClassName(isDarkMode)}
                 value={form.botToken}
-                onChange={(event) => onBotTokenChange(event.currentTarget.value)}
+                onChange={(event) =>
+                  onBotTokenChange(event.currentTarget.value)
+                }
               />
             </InputBlock>
 
@@ -114,7 +124,9 @@ export function DeployBotSection({
                       >
                         {model.name}
                       </p>
-                      <p className="text-[11px] sm:text-xs text-slate-500">{model.desc}</p>
+                      <p className="text-[11px] sm:text-xs text-slate-500">
+                        {model.desc}
+                      </p>
                     </div>
                     {form.aiModel === model.id && (
                       <div className="h-2.5 w-2.5 rounded-full bg-[#0088cc] shrink-0 ml-2" />
@@ -130,7 +142,9 @@ export function DeployBotSection({
                 rows={5}
                 className={fieldClassName(isDarkMode)}
                 value={form.systemPrompt}
-                onChange={(event) => onSystemPromptChange(event.currentTarget.value)}
+                onChange={(event) =>
+                  onSystemPromptChange(event.currentTarget.value)
+                }
               />
               <p className="ml-1 text-xs text-slate-500">
                 Leave empty to use default system prompt shown above
@@ -164,7 +178,10 @@ export function DeployBotSection({
             <InputBlock label="Add Documentation URLs">
               <div className="space-y-2.5 sm:space-y-2">
                 {form.urls.map((url, index) => (
-                  <div key={index} className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+                  <div
+                    key={index}
+                    className="flex flex-col sm:flex-row gap-2 sm:gap-2"
+                  >
                     <div className="relative flex-1">
                       <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
                       <input
@@ -221,7 +238,9 @@ export function DeployBotSection({
                     className="hidden"
                     multiple
                     accept=".pdf,.docx,.txt,.csv"
-                    onChange={(event) => onFilesChange(event.currentTarget.files)}
+                    onChange={(event) =>
+                      onFilesChange(event.currentTarget.files)
+                    }
                   />
                 </label>
 
@@ -262,22 +281,34 @@ export function DeployBotSection({
               </div>
             </InputBlock>
 
-            <div className={`rounded-xl sm:rounded-2xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}>
+            <div
+              className={`rounded-xl sm:rounded-2xl border ${isDarkMode ? "border-slate-800" : "border-slate-200"}`}
+            >
               <button
                 type="button"
                 onClick={() => setShowAdvanced((v) => !v)}
+                aria-expanded={showAdvanced}
+                aria-controls="deploy-advanced-settings"
                 className={`flex w-full items-center justify-between px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-colors ${isDarkMode ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-slate-900"}`}
               >
                 Advanced Settings
                 <ChevronDown
+                  aria-hidden="true"
                   className={`h-4 w-4 transition-transform duration-200 ${showAdvanced ? "rotate-180" : ""}`}
                 />
               </button>
 
               {showAdvanced && (
-                <div className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}>
+                <div
+                  id="deploy-advanced-settings"
+                  className={`space-y-4 border-t px-4 sm:px-5 py-4 ${isDarkMode ? "border-slate-800 bg-slate-800/20" : "border-slate-100 bg-slate-50/50"}`}
+                >
                   <div className="space-y-3">
-                    <p className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>Crawl Settings</p>
+                    <p
+                      className={`text-xs font-bold uppercase tracking-wider ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}
+                    >
+                      Crawl Settings
+                    </p>
                     <div>
                       <label className="text-xs font-medium text-slate-500">
                         Max Crawl Depth (levels)
@@ -291,7 +322,10 @@ export function DeployBotSection({
                           onCrawlMaxDepthChange(
                             Math.max(
                               1,
-                              Math.min(5, Number.parseInt(event.currentTarget.value) || 2),
+                              Math.min(
+                                5,
+                                Number.parseInt(event.currentTarget.value) || 2,
+                              ),
                             ),
                           )
                         }
@@ -314,7 +348,11 @@ export function DeployBotSection({
                           onCrawlMaxPagesChange(
                             Math.max(
                               1,
-                              Math.min(50, Number.parseInt(event.currentTarget.value) || 10),
+                              Math.min(
+                                50,
+                                Number.parseInt(event.currentTarget.value) ||
+                                  10,
+                              ),
                             ),
                           )
                         }
@@ -326,17 +364,25 @@ export function DeployBotSection({
                     </div>
                   </div>
 
-                  <div className={`flex items-center justify-between rounded-xl border p-3 sm:p-4 ${isDarkMode ? "border-slate-700 bg-slate-800/30" : "border-slate-200 bg-white/50"}`}>
+                  <div
+                    className={`flex items-center justify-between rounded-xl border p-3 sm:p-4 ${isDarkMode ? "border-slate-700 bg-slate-800/30" : "border-slate-200 bg-white/50"}`}
+                  >
                     <div className="flex-1">
-                      <p className={`text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}>
+                      <p
+                        className={`text-sm font-semibold ${isDarkMode ? "text-slate-200" : "text-slate-700"}`}
+                      >
                         Web Search
                       </p>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        Let the bot search the web to supplement its knowledge base
+                        Let the bot search the web to supplement its knowledge
+                        base
                       </p>
                     </div>
                     <button
                       type="button"
+                      role="switch"
+                      aria-checked={form.webSearchEnabled}
+                      aria-label="Enable Web Search"
                       onClick={onToggleWebSearch}
                       className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ml-4 ${
                         form.webSearchEnabled
@@ -348,7 +394,9 @@ export function DeployBotSection({
                     >
                       <span
                         className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                          form.webSearchEnabled ? "translate-x-5" : "translate-x-0"
+                          form.webSearchEnabled
+                            ? "translate-x-5"
+                            : "translate-x-0"
                         }`}
                       />
                     </button>
@@ -380,8 +428,8 @@ export function DeployBotSection({
             </Button>
           </form>
           <p className="px-1 text-xs text-slate-400">
-            Provide your bot token and knowledge base. Your connected wallet will
-            be registered as the bot&apos;s owner.
+            Provide your bot token and knowledge base. Your connected wallet
+            will be registered as the bot&apos;s owner.
           </p>
         </div>
       </div>
@@ -401,14 +449,17 @@ function ModelHint({ isDarkMode }: { isDarkMode: boolean }) {
       <div className="flex items-center gap-2">
         <span className="flex h-2 w-2 animate-pulse rounded-full bg-emerald-500" />
         Deployment fee:{" "}
-        <strong className={isDarkMode ? "text-emerald-300" : "text-emerald-900"}>
+        <strong
+          className={isDarkMode ? "text-emerald-300" : "text-emerald-900"}
+        >
           FREE
         </strong>
       </div>
       <div
         className={`mt-1 text-xs ${isDarkMode ? "text-emerald-400/70" : "text-emerald-700/80"}`}
       >
-        Bot replies use credits from your connected wallet balance. Select your preferred AI model above.
+        Bot replies use credits from your connected wallet balance. Select your
+        preferred AI model above.
       </div>
     </div>
   );
